@@ -329,33 +329,37 @@ El mètode Deep Q-Network (DQN) és un dels pilars fonamentals de l'aprenentatge
 
 \paragraph{Q-learning revisat:}
 
-El mètode Q-learning és un algorisme de control off-policy que aprèn una política òptima maximitzant el valor esperat del retorn acumulat. L'actualització de la funció $Q$ es realitza segons:
+
+El mètode Q-learning és un algorisme de control de tipus off-policy que permet aprendre una política òptima mitjançant la maximització del valor esperat del retorn acumulat. La funció de valor $Q$ s’actualitza iterativament a partir de l’experiència de l’agent, segons la següent equació:
 
 \begin{equation}
 Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_{t+1} + \gamma \max_{a'} Q(s_{t+1}, a') - Q(s_t, a_t) \right]
 \end{equation}
 
-on $\alpha$ és la taxa d'aprenentatge, $r_{t+1}$ la recompensa rebuda, i $\gamma$ el factor de descompte.
+En aquesta fórmula, $\alpha$ representa la taxa d’aprenentatge, $r_{t+1}$ és la recompensa obtinguda després de realitzar l’acció $a_t$ en l’estat $s_t$, i $\gamma$ és el factor de descompte que pondera les recompenses futures. L’objectiu és ajustar progressivament l’estimació de $Q(s,a)$ per tal que reflecteixi millor els guanys a llarg termini que pot aconseguir l’agent en seguir una política determinada.
 
 \paragraph{Limitacions i solució amb DQN:}
 
-Q-learning tradicional assumeix espais discrets i petits, emmagatzemant $Q(s,a)$ en una taula. Però per problemes amb espais d'estats continus o molt grans, aquesta estratègia esdevé inviable. DQN afronta aquest repte aproximant $Q(s,a)$ mitjançant una xarxa neuronal parametritzada per $\theta$, de manera que $Q(s,a; \theta) \approx Q^*(s,a)$.
+Tot i la seva simplicitat conceptual, Q-learning presenta limitacions importants quan s’aplica a problemes amb espais d’estats molt grans o continus. En aquests casos, la representació explícita de la taula $Q(s,a)$ no es pot executar, tant per qüestions de memòria com per l'eficiència computacional. Per abordar aquest problema, es va proposar l’algorisme Deep Q-Network (DQN), que substitueix la taula Q per una xarxa neuronal capaç d’aproximar la funció $Q(s,a)$ a través de paràmetres ajustables $\theta$, de manera que $Q(s,a; \theta) \approx Q^*(s,a)$.
+
 
 \paragraph{Arquitectura DQN:}
 
-La DQN és una xarxa neuronal convolucional (CNN) quan es treballa amb imatges, tot i que pot adaptar-se a qualsevol arquitectura segons el tipus d'estats. La sortida de la xarxa és un vector amb tants valors com accions disponibles, cada un representant el valor Q estimat per a una acció en un estat determinat.
+L’arquitectura d’una DQN es basa habitualment en una xarxa neuronal profunda, que pot adaptar-se segons la naturalesa de les dades d’entrada. Per exemple, si es treballa amb imatges, s’utilitzen xarxes convolucionals (CNN), mentre que en altres casos es poden fer servir xarxes totalment connectades o altres estructures. El resultat de la xarxa és un vector que conté els valors Q estimats per a cada acció possible a partir d’un estat donat.
+
 
 \paragraph{Funció de pèrdua i entrenament:}
-
-La xarxa s'entrena minimitzant la pèrdua entre el valor Q actual i el valor objectiu $y_t$, definit per l'equació de Bellman:
+El procés d’aprenentatge es fonamenta en la minimització de la diferència entre la sortida de la xarxa i un valor objectiu $y_t$, que s’obté aplicant la fórmula de Bellman. La funció de pèrdua utilitzada habitualment és la següent:
 
 \begin{equation}
 \mathcal{L}(\theta) = \mathbb{E}_{(s,a,r,s') \sim \mathcal{D}} \left[ \left( y_t - Q(s, a; \theta) \right)^2 \right]
 \end{equation}
 
-on $y_t = r + \gamma \max_{a'} Q(s', a'; \theta^-)$, i $\theta^-$ són els pesos d'una còpia fixa de la xarxa (target network), que s'actualitza periòdicament per estabilitzar l'entrenament.
+on el valor objectiu es calcula com $y_t = r + \gamma \max_{a'} Q(s', a'; \theta^-)$, i $\theta^-$ representa els pesos d’una còpia fixa de la xarxa principal (target network) que s’actualitza periòdicament.
 
-\paragraph{Tècniques clau per estabilitzar DQN:}
+
+\paragraph{Tècniques per estabilitzar DQN:}
+Per millorar el comportament i l’estabilitat del model durant l’entrenament, DQN incorpora diverses estratègies. En primer lloc, s’utilitza una target network, és a dir, una rèplica de la xarxa principal amb pesos congelats durant diverses iteracions, que permet calcular les prediccions de futur de manera més estable. En segon lloc, s’emprèn la tècnica d’experience replay, que consisteix a emmagatzemar les transicions observades $(s,a,r,s')$ en una memòria i mostrejar-les aleatòriament durant l’entrenament. Això trenca la correlació temporal entre mostres i millora l’eficiència de l’aprenentatge. Finalment, per garantir un equilibri entre exploració i explotació, s’adopta una política $\varepsilon$-greedy, en què l’agent selecciona accions aleatòries amb una probabilitat $\varepsilon$, afavorint l'exploració durant l'entrenament.
 
 \begin{itemize}
   \item \textbf{Target network:} Una segona xarxa amb pesos fixos $\theta^-$ utilitzada per calcular els valors objectiu $y_t$ durant un cert nombre d'iteracions.
