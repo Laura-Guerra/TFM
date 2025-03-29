@@ -401,9 +401,9 @@ El funcionament complet de PPO es pot resumir en les següents etapes, repetides
 
 \subsubsection{Soft Actor-Critic (SAC)}
 
-Soft Actor-Critic (SAC) és un dels algoritmes d'aprenentatge per reforç profund més eficients actualment, especialment adequat per a entorns continus. S'emmarca dins la classe dels mètodes \textit{actor-crític off-policy}, amb la novetat d'optimitzar no només el retorn esperat sinó també l'entropia de la política, afavorint polítiques més deterministes i exploratòries.
+Soft Actor-Critic (SAC) és un dels algorismes d'aprenentatge per reforç profund més eficients actualment dissenyat per operar en entorns amb espais d'accions continus. Forma part dels mètodes \textit{actor-crític off-policy}, però amb la novetat que a banda d'optimitzar el retorn esperat, també maximitza l'entropia de la política, afavorint polítiques més deterministes i exploratòries.
 
-\paragraph{Entropia i motivació:}
+A diferència d'altres enfocaments que busquen únicament maximitzar la recompensa, SAC té dos objectius. D'una banda, vol obtenir un retorn acumulat elevat; de l’altra, manté l’entropia de la política elevada per evitar una convergència prematura cap a solucions deterministes. Aquest objectiu es tradueix en la següent expressió:
 
 En lloc de maximitzar només el retorn esperat acumulat, SAC maximitza l'objectiu següent:
 
@@ -411,34 +411,25 @@ En lloc de maximitzar només el retorn esperat acumulat, SAC maximitza l'objecti
 J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[ \sum_t r(s_t, a_t) + \alpha \mathcal{H}(\pi(\cdot|s_t)) \right]
 \end{equation}
 
-on $\mathcal{H}$ és l'entropia de la política, i $\alpha$ és un hiperparàmetre que pondera l'exploració. Aquest terme afavoreix polítiques que mantinguin accions aleatòries durant més temps, evitant una convergència massa ràpida.
+Aquí, $\mathcal{H}$ és l’entropia de la política, i $\alpha$ és un hiperparàmetre que controla el pes assignat al terme d'exploració. Com més alt sigui $\alpha$, més probabilitat tindrà l’agent de mantenir accions aleatòries, evitant una convergència massa ràpida.
 
-\paragraph{Components del SAC:}
+\paragraph{Arquitectura del SAC:}
 
-SAC combina tres xarxes neuronals clau:
+L’arquitectura del SAC integra diversos components que treballen conjuntament. El primer és l’actor $\pi_\phi(a|s)$, una política estocàstica que genera accions a partir d’una distribució probabilística —habitualment una gaussiana parametritzada. El segon són dos crítics, $Q_{\theta_1}(s,a)$ i $Q_{\theta_2}(s,a)$, que proporcionen estimacions de valor independents. Aquest disseny amb doble crític busca reduir el biaix per sobreaprenentatge, prenent el mínim dels dos valors en les actualitzacions. Finalment, també s’incorporen versions retardades dels crítics, conegudes com a \textit{target critics}, que s’usen per millorar l’estabilitat del procés d'entrenament.
 
-\begin{itemize}
-  \item \textbf{Actor} $\pi_\phi(a|s)$: Política estocàstica que genera accions a partir d'una distribució parametritzada (normalment gaussiana).
-  \item \textbf{Crítics} $Q_{\theta_1}(s,a)$ i $Q_{\theta_2}(s,a)$: Dues funcions de valor d'acció per reduir el sobreaprenentatge mitjançant la minimització del valor més baix.
-  \item \textbf{Target critics}: Versions retardades dels crítics per a una actualització estable.
-\end{itemize}
 
-\paragraph{Objectius d'entrenament:}
-
-\begin{itemize}
-  \item \textbf{Actualització dels crítics:} s'ajusten per minimitzar l'error TD sobre la següent estimació soft del retorn:
-
+L’entrenament del SAC gira al voltant de tres funcions d’objectiu diferenciades. En primer lloc, els crítics s’actualitzen per mitjà de l’error de temporal difference (TD), fent servir una estimació suau del retorn que inclou el terme d'entropia de la política:
   \begin{equation}
   y(r,s') = r + \gamma \left( \min_{i=1,2} Q_{\theta'_i}(s', a') - \alpha \log \pi_\phi(a'|s') \right)
   \end{equation}
 
-  \item \textbf{Actualització de l'actor:} es minimitza:
+  En segon lloc, l’actor es millora mitjançant la minimització d’una pèrdua que combina el valor esperat negatiu amb el terme d’entropia, afavorint aquelles accions que siguin valuoses i exploratòries alhora:
 
   \begin{equation}
   \mathcal{L}_{\text{actor}} = \mathbb{E}_{s_t \sim \mathcal{D}} \left[ \alpha \log \pi_\phi(a_t|s_t) - Q_{\theta}(s_t, a_t) \right]
   \end{equation}
 
-  \item \textbf{Actualització de l'entropia:} es pot ajustar automàticament $\alpha$ mitjançant:
+  Finalment, l’hiperparàmetre $\alpha$, que controla el pes del terme d'entropia, pot ajustar-se automàticament durant l’entrenament. Aquesta adaptació es fa mitjançant l’optimització d’una tercera funció de pèrdua:
 
   \begin{equation}
   \mathcal{L}(\alpha) = \mathbb{E}_{a_t \sim \pi} \left[ -\alpha \log \pi(a_t|s_t) - \alpha \mathcal{H}_\text{target} \right]
@@ -446,18 +437,11 @@ SAC combina tres xarxes neuronals clau:
 
 \end{itemize}
 
-\paragraph{Característiques clau:}
-
-\begin{itemize}
-  \item \textbf{Off-policy:} Fa ús de replay buffer, millorant l'eficiència de la mostra.
-  \item \textbf{Exploració regularitzada:} L'entropia manté l'exploració activa durant l'entrenament.
-  \item \textbf{Dues xarxes Q:} Redueixen el biaix en les estimacions de valor.
-  \item \textbf{Entropia adaptable:} $\alpha$ pot ser un paràmetre aprés per ajustar el trade-off entre exploració i explotació.
-\end{itemize}
+Gràcies a aquests elements, SAC és molt robust i eficient. El seu enfocament off-policy permet aprofitar dades acumulades en experiències passades, fet que incrementa l’eficiència. Alhora, la regularització mitjançant entropia manté una exploració activa i sostinguda durant l'entrenament. L’ús de dues xarxes Q redueix significativament el biaix en les estimacions de valor, i l’ajust automàtic del paràmetre $\alpha$ facilita un equilibri dinàmic entre exploració i explotació.
 
 
 
-
+Per tal de sintetitzar les diferències i similituds entre els algorismes d'aprenentatge per reforç profund analitzats, es presenta la següent taula comparativa.
 \begin{table}[h]
 \centering
 \caption{Comparativa dels algoritmes de DRL utilitzats}
@@ -477,7 +461,7 @@ Estabilitat & Moderada & Alta & Alta \\ \hline
 
 \subsection{Natural language processing}
 
- Les tècniques de Processament del Llenguatge Natural (NLP) permeten extreure característiques clau dels textos, ja sigui en forma de paraules rellevants, temàtiques predominants o sentiments. A continuació es descriuen les tècniques que s'han considerat en aquest treball.
+ Les tècniques de Processament del Llenguatge Natural permeten extreure característiques clau dels textos, ja sigui en forma de paraules rellevants, temàtiques predominants o sentiments. A continuació es descriuen les tècniques que s'han considerat en aquest treball.
 
 \subsubsection{TF-IDF}
 
