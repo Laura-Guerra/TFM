@@ -284,12 +284,12 @@ El DRL combina els principis de l'aprenentatge per reforç tradicional amb la po
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.8\textwidth]{figs/esquemaRL.png}
-	\caption{Esquema d'interacció en el DRL\cite{esquemaRL}.}
+	\caption{Esquema d'interacció en el DRL \cite{esquemaRL}.}
 	\label{fig:context-anoni1}
 \end{figure}
 
 
-Matemàticament, aquest problema es pot descriure mitjançant un procés de decisió de Markov, definit per $\langle \mathcal{S}, \mathcal{A}, p, r, \gamma\rangle$ \cite{DRLIntro}. El conjunt $\mathcal{S}$ representa els \emph{estats} possibles de l'entorn; $\mathcal{A}$ és el conjunt d'accions disponibles; $p(s' \mid s,a)$ és la probabilitat de transitar a l'estat $s'$ en executar l'acció $a$ a l'estat $s$; $r(s,a)$ defineix la recompensa obtinguda i $\gamma \in [0,1]$ és el factor de descompte que pondera les recompenses futures. A cada pas de temps $t$, l'agent observa un estat $s_t$, tria una acció $a_t$ i rep una recompensa $r_t$. L'objectiu final és maximitzar la suma de recompenses futures (retorn), expressada sovint com \cite{RLIntro}:
+Matemàticament, aquest problema es pot descriure mitjançant un procés de decisió de Markov, definit per $\langle \mathcal{S}, \mathcal{A}, p, r, \gamma\rangle$ \cite{DRLIntro}. El conjunt $\mathcal{S}$ representa els \emph{estats} possibles de l'entorn; $\mathcal{A}$ és el conjunt d'accions disponibles; $p(s' \mid s,a)$ és la probabilitat de transitar a l'estat $s'$ en executar l'acció $a$ a l'estat $s$; $r(s,a)$ defineix la recompensa obtinguda i $\gamma \in [0,1]$ és el factor de descompte que pondera les recompenses futures. A cada pas de temps $t$, l'agent observa un estat $s_t$, tria una acció $a_t$ i rep una recompensa $r_t$ \cite{RLIntro}. L'objectiu final és maximitzar la suma de recompenses futures (retorn), expressada sovint com :
 
 \begin{equation}
 G_t \;=\; \sum_{k=0}^{\infty} \,\gamma^k \, r_{t+k+1}.
@@ -300,7 +300,7 @@ G_t \;=\; \sum_{k=0}^{\infty} \,\gamma^k \, r_{t+k+1}.
 \begin{itemize}
 \item \textbf{Agent}: És el sistema que pren decisions a cada pas. L'agent manté o aprèn una estratègia, anomenada \emph{política} $\pi(a \mid s)$, que determina amb quina probabilitat triarà cada acció $a$ si es troba a l'estat $s$ \cite{M1}.
 
-\item \textbf{Entorn}: És el medi extern on l'agent actua. Rep l'acció de l'agent i actualitza l'estat, retornant la nova observació $s_{t+1}$ i la recompensa $r_{t+1}$. L'entorn pot ser complex i contenir característiques molt variades, incloses dades numèriques i dades qualitatives provinents de fonts no estructurades, com poden ser les notícies \cite{M1}.
+\item \textbf{Entorn}: És el medi extern on l'agent actua. Rep l'acció de l'agent i actualitza l'estat, retornant la nova observació $s_{t+1}$ i la recompensa $r_{t+1}$ \cite{M1}. L'entorn pot ser complex i contenir característiques molt variades, incloses dades numèriques i dades qualitatives provinents de fonts no estructurades, com poden ser les notícies .
 
 \item \textbf{Estat} ($s \in \mathcal{S}$): La informació rellevant del medi en un instant concret. Quan és tracta d'un sistema de Markov, es considera que $s$ conté tota la informació necessària per decidir l'acció òptima, sense haver de dependre de tots els estats previs \cite{M1}.
 
@@ -318,14 +318,14 @@ V^\pi(s) \;=\; \mathbb{E}_\pi\bigl[G_t \,\big\vert\, s_t = s\bigr]
 Q^\pi(s,a) \;=\; \mathbb{E}_\pi\bigl[G_t \,\big\vert\, s_t = s,\; a_t = a\bigr].
 \end{equation}
 
-La \textbf{política} òptima $\pi^*$ és aquella que maximitza el retorn acumulat; sovint, però, s'aprèn mitjançant aproximacions successives fins a trobar un bon resultat. Quan els espais d'estats o d'accions són molt grans, s'utilitzsen xarxes neuronals profundes per aproximar $Q$ o $V$ de manera eficient \cite{MnihNature2015}.
+La \textbf{política} òptima $\pi^*$ és aquella que maximitza el retorn acumulat; sovint, però, s'aprèn mitjançant aproximacions successives fins a trobar un bon resultat. Quan els espais d'estats o d'accions són molt grans, s'utilitzsen xarxes neuronals profundes per aproximar $Q$ o $V$ de manera eficient \cite{RLIntro}.
 
 \vspace{2ex}
 Dins d'aquest marc general, en el DRL s'han proposat diversos mètodes que resolen el problema de presa de decisions sota diferents estratègies de modelatge i optimització. A continuació, es descriuen els tres mètodes que s'han considerat en aquest treball.
 
 \subsubsection{Deep Q-Network (DQN)}
 
-El mètode Deep Q-Network (DQN) és un dels pilars fonamentals de l'aprenentatge per reforç profund (DRL), i representa l'aplicació directa de xarxes neuronals profundes per aproximar la funció d'acció-valor $Q(s, a)$ pròpia del mètode Q-learning. La seva introducció per DeepMind \cite{MnihNature2015} va marcar un abans i un després, aconseguint un rendiment superhumà en diversos jocs d'Atari.
+El mètode Deep Q-Network (DQN) és un dels pilars fonamentals de l'aprenentatge per reforç profund (DRL), i representa l'aplicació directa de xarxes neuronals profundes per aproximar la funció d'acció-valor $Q(s, a)$ pròpia del mètode Q-learning. La seva introducció per DeepMind \cite{MnihNature2015} va marcar un abans i un després, aconseguint un rendiment superior al de humans en diversos jocs d'Atari \cite{M9}.
 
 \paragraph{Q-learning revisat:}
 El Q-learning és un algorisme de control off-policy que permet aprendre una política òptima mitjançant la maximització del valor esperat del retorn acumulat. La funció de valor $Q$ s’actualitza iterativament a partir de l’experiència de l’agent, segons la següent equació:
@@ -356,15 +356,15 @@ on el valor objectiu es calcula com $y_t = r + \gamma \max_{a'} Q(s', a'; \theta
 
 
 \paragraph{Tècniques per estabilitzar DQN:}
-Per garantir un entrenament estable i eficient, DQN implementa diverses estratègies. La primera és l’ús d’una target network, una rèplica de la xarxa principal amb pesos congelats durant un cert nombre d’iteracions, que s'utilitza per calcular els valors objectiu $y_t$ de manera més robusta. La segona és l’\textit{experience replay}, que consisteix a emmagatzemar les transicions $(s,a,r,s')$ en una memòria i mostrejar-les aleatòriament durant l’entrenament. Això trenca la correlació temporal entre les mostres i millora l’eficiència del procés d’aprenentatge. Finalment, per garantir un equilibri entre exploració i explotació, s’adopta una política $\varepsilon$-greedy, en què l’agent selecciona accions aleatòries amb una probabilitat $\varepsilon$, afavorint l'exploració durant l'entrenament.
+Per garantir un entrenament estable i eficient, DQN implementa diverses estratègies. La primera és l’ús d’una target network, una rèplica de la xarxa principal amb pesos congelats durant un cert nombre d’iteracions, que s'utilitza per calcular els valors objectiu $y_t$ de manera més robusta. La segona és l’\textit{experience replay}, que consisteix a emmagatzemar les transicions $(s,a,r,s')$ en una memòria i mostrejar-les aleatòriament durant l’entrenament. Això trenca la correlació temporal entre les mostres i millora l’eficiència del procés d’aprenentatge. Finalment, per garantir un equilibri entre exploració i explotació, s’adopta una política $\varepsilon$-greedy, en què l’agent selecciona accions aleatòries amb una probabilitat $\varepsilon$, afavorint l'exploració durant l'entrenament \cite{M9}\cite{MnihNature2015}.
 
 
 \subsubsection{Proximal Policy Optimization (PPO)}
 
-El mètode Proximal Policy Optimization (PPO) és un dels algorismes d'aprenentatge per reforç profund més utilitzats actualment. Va ser proposat per OpenAI com una alternativa robusta i eficient als mètodes de gradient de política tradicionals com REINFORCE o TRPO (Trust Region Policy Optimization)\cite{}. Es caracteritza per combinar estabilitat, eficiència en el càlcul i ser fàcilment implementable.
+El mètode Proximal Policy Optimization (PPO) és un dels algorismes d'aprenentatge per reforç profund més utilitzats actualment. Va ser proposat per OpenAI com una alternativa robusta i eficient als mètodes de gradient de política tradicionals com REINFORCE o TRPO (Trust Region Policy Optimization)\cite{schulman2017}. Es caracteritza per combinar estabilitat, eficiència en el càlcul i ser fàcilment implementable.
 
 
-Es tracta d'un mètode basat en gradient de política (Policy Gradient, PG). Aquests mètodes actualitzen els paràmetres de la política directament segons:
+Es tracta d'un mètode basat en gradient de política (PG). Aquests mètodes actualitzen els paràmetres de la política directament segons:
 
 \begin{equation}
 \theta_{t+1} \leftarrow \theta_t + \alpha \nabla_\theta J(\theta)
@@ -401,9 +401,9 @@ El funcionament complet de PPO es pot resumir en les següents etapes, repetides
 
 \subsubsection{Soft Actor-Critic (SAC)}
 
-Soft Actor-Critic (SAC) és un dels algorismes d'aprenentatge per reforç profund més eficients actualment dissenyat per operar en entorns amb espais d'accions continus. Forma part dels mètodes \textit{actor-crític off-policy}, però amb la novetat que a banda d'optimitzar el retorn esperat, també maximitza l'entropia de la política, afavorint polítiques més deterministes i exploratòries.
+El Soft Actor-Critic (SAC) és un dels algorismes d'aprenentatge per reforç profund més eficients dissenyat per operar en entorns amb espais d'accions continus \cite{Haarnoja2018}. Forma part dels mètodes \textit{actor-crític off-policy}, però amb la novetat que a banda d'optimitzar el retorn esperat, també maximitza l'entropia de la política, afavorint polítiques més deterministes i exploratòries \cite{M11}.
 
-A diferència d'altres enfocaments que busquen únicament maximitzar la recompensa, SAC té dos objectius. D'una banda, vol obtenir un retorn acumulat elevat; de l’altra, manté l’entropia de la política elevada per evitar una convergència prematura cap a solucions deterministes. Aquest objectiu es tradueix en la següent expressió:
+A diferència d'altres enfocaments que busquen únicament maximitzar la recompensa, el SAC té dos objectius. D'una banda, vol obtenir un retorn acumulat elevat; de l’altra, manté l’entropia de la política elevada per evitar una convergència prematura cap a solucions deterministes. Aquest objectiu es tradueix en la següent expressió:
 
 En lloc de maximitzar només el retorn esperat acumulat, SAC maximitza l'objectiu següent:
 
@@ -435,11 +435,10 @@ L’entrenament del SAC gira al voltant de tres funcions d’objectiu diferencia
   \mathcal{L}(\alpha) = \mathbb{E}_{a_t \sim \pi} \left[ -\alpha \log \pi(a_t|s_t) - \alpha \mathcal{H}_\text{target} \right]
   \end{equation}
 
-\end{itemize}
 
-Gràcies a aquests elements, SAC és molt robust i eficient. El seu enfocament off-policy permet aprofitar dades acumulades en experiències passades, fet que incrementa l’eficiència. Alhora, la regularització mitjançant entropia manté una exploració activa i sostinguda durant l'entrenament. L’ús de dues xarxes Q redueix significativament el biaix en les estimacions de valor, i l’ajust automàtic del paràmetre $\alpha$ facilita un equilibri dinàmic entre exploració i explotació.
+Gràcies a aquests elements, SAC és molt robust i eficient. El seu enfocament off-policy permet aprofitar dades acumulades en experiències passades, fet que incrementa l’eficiència. Alhora, la regularització mitjançant entropia manté una exploració activa i sostinguda durant l'entrenament. L’ús de dues xarxes Q redueix significativament el biaix en les estimacions de valor, i l’ajust automàtic del paràmetre $\alpha$ facilita un equilibri dinàmic entre exploració i explotació \cite{Haarnoja2018}.
 
-
+\vspace{2em}
 
 Per tal de sintetitzar les diferències i similituds entre els algorismes d'aprenentatge per reforç profund analitzats, es presenta la següent taula comparativa.
 \begin{table}[h]
@@ -507,7 +506,7 @@ Formalment, si es tenen $K$ temes i $D$ documents, LDA estima distribucions $\th
 
 \subsubsection{Anàlisi de sentiments}
 
-L'anàlisi de sentiments pretén determinar la polaritat (positiva, negativa o neutra) d'un text. Les tècniques més senzilles es basen en diccionaris de paraules amb connotació positiva o negativa, mentre que els mètodes avançats utilitzen models supervisats o xarxes neuronals de tipus \emph{Transformers}. En l'àmbit financer, detectar ràpidament un sentiment negatiu pot anticipar vendes massives, mentre que un sentiment marcadament positiu pot indicar expectatives alcistes del mercat.
+L'anàlisi de sentiments pretén determinar la polaritat (positiva, negativa o neutra) d'un text \cite{kennedy2006sentiment}. Les tècniques més senzilles es basen en diccionaris de paraules amb connotació positiva o negativa, mentre que els mètodes avançats utilitzen models supervisats o xarxes neuronals de tipus \emph{Transformers} \cite{TABINDAKOKAB2022100157}. En l'àmbit financer, detectar ràpidament un sentiment negatiu pot anticipar vendes massives, mentre que un sentiment marcadament positiu pot indicar expectatives alcistes del mercat.
 
 
 \subsection{Integració de NLP i DRL}
@@ -518,7 +517,9 @@ Tot i que la literatura en aquest àmbit no és extensa, hi ha publicacions que 
 
 En un altre estudi rellevant és un treball de final de grau, \cite{alvarez2023real}, on s'utilitzen representacions BERT de notícies financeres en temps real combinades amb informació de mercat per alimentar un agent DRL. Aquest sistema demostra una millor capacitat d'anticipació de tendències respecte a models que només utilitzen dades numèriques.
 
-A més, s'ha observat que la incorporació d'informació provinent de xarxes socials, com Twitter o Reddit, pot afegir valor predictiu. En \cite{DBLP}, es mostra que els senyals socials poden millorar l'eficiència d'agents basats en DQN i PPO quan s'apliquen a mercats volàtils com el de les criptomonedes.
+A més, s'ha observat que la incorporació d'informació provinent de xarxes socials, com Twitter o Reddit, pot afegir valor predictiu. En \cite{DBLP}, es mostra com aquesta informació  pot millorar l'eficiència d'agents basats en DQN i PPO quan s'apliquen a mercats volàtils com el de les criptomonedes.
+
+
 
 
 
