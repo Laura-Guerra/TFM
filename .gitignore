@@ -1,0 +1,27 @@
+# Archivos de entorno
+.env
+.env.*
+!.env.example
+
+# Archivos de configuración sensible
+*/secrets.py
+*/config/secrets.py
+*.secret
+
+# Directorios y archivos generados
+__pycache__/
+*.py[cod]
+*.swp
+*.DS_Store
+
+# Datos y modelos grandes
+data/raw/
+models/
+*.pkl
+*.h5
+*.pt
+
+# Entornos virtuales
+venv/
+.env/
+.venv/
