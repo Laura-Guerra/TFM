@@ -24,4 +24,4 @@ models/
 # Entornos virtuales
 venv/
 .env/
-.venv/
+.venv/!/.env
