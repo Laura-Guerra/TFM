@@ -7,8 +7,24 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+dotenv = "^0.9.9"
+requests = "^2.32.3"
+pandas = "^2.2.3"
+pydantic = "^2.11.3"
 
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.11.5"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 79
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = []
+
