@@ -16,3 +16,19 @@ ROOT_DIR = Path(__file__).resolve().parents[3]
 
 PATH_DATA_RAW = ROOT_DIR / "tfm" / "data" / "raw"
 PATH_DATA_PROCESSED = ROOT_DIR / "tfm" / "data" / "processed"
+
+
+
+# Model settings
+NEWS_SECTIONS = [
+    "Business Day", "World", "U.S.", "Technology", "Your Money",
+    "Opinion", "Climate", "Briefing", "The Upshot", "Science"
+]
+
+NEWS_SUBSECTIONS = [
+    "Economy", "DealBook", "International Business", "Stocks and Bonds",
+    "Mutual Funds", "Mutual Funds and ETFs", "Asset Allocation", "Energy & Environment",
+    "Politics", "Elections", "Americas", "Europe", "Asia Pacific", "Middle East", "Africa",
+    "Canada", "Australia", "Entrepreneurship", "Personal Tech",
+    "Editorials", "International Opinion", "Opinion | Business & Economics", "Opinion | The World"
+]
