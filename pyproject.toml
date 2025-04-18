@@ -11,6 +11,12 @@ dotenv = "^0.9.9"
 requests = "^2.32.3"
 pandas = "^2.2.3"
 pydantic = "^2.11.3"
+altair = "^5.5.0"
+matplotlib = "^3.10.1"
+nltk = "^3.9.1"
+gensim = "^4.3.3"
+scikit-learn = "^1.6.1"
+textblob = "^0.19.0"
 
 
 [tool.poetry.group.dev.dependencies]
