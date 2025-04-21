@@ -263,7 +263,7 @@ class NLProcessor:
         logger.info(f"Starting NLP transformation for market: {market} using strategy: {strategy}")
         results = []
 
-        for date, group in df.groupby("market_date"):
+        for date, group in df.groupby(f"market_date_{market}"):
             try:
                 group["date"] = date
                 if strategy == "concat":
