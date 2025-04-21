@@ -8,24 +8,36 @@ from sklearn.feature_extraction.text import CountVectorizer
 from textblob import TextBlob
 
 
+from transformers import pipeline
+
 class NLProcessor:
     def __init__(
         self,
         word2vec_dim=100,
         lda_topics=10,
         min_word_count=3,
-        cutoff_date="2024-01-01"
+        cutoff_date="2024-01-01",
+        use_finbert: bool = False
     ):
         self.word2vec_dim = word2vec_dim
         self.lda_topics = lda_topics
         self.min_word_count = min_word_count
         self.cutoff_date = pd.to_datetime(cutoff_date).tz_localize("UTC")
+        self.use_finbert = use_finbert
 
         self.word2vec_model = None
         self.lda_model = None
         self.vectorizer = None
+        self.finbert = None
 
-        logger.info(f"Initialized NLProcessor with cutoff_date: {self.cutoff_date}")
+        if self.use_finbert:
+            logger.info("Loading FinBERT sentiment model...")
+            try:
+                self.finbert = pipeline("sentiment-analysis", model="ProsusAI/finbert")
+                logger.success("FinBERT loaded successfully.")
+            except Exception as e:
+                logger.error(f"Could not load FinBERT: {e}")
+                self.use_finbert = False
 
     def train(self, df: pd.DataFrame):
         logger.info("Training NLP models...")
@@ -82,7 +94,21 @@ class NLProcessor:
             text = str(text).strip()
             if not text:
                 return 0.0
-            return TextBlob(text).sentiment.polarity
+
+            if not self.use_finbert and not self.finbert:
+                return TextBlob(text).sentiment.polarity
+
+            result = self.finbert(text)[0]
+            label = result["label"].lower()
+            score = result["score"]
+
+            if label == "positive":
+                return score
+            elif label == "negative":
+                return -score
+            else:  # neutral
+                return 0.0
+
         except Exception as e:
             logger.warning(f"Sentiment analysis failed: {e}")
             return 0.0
