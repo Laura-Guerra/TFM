@@ -22,6 +22,7 @@ loguru = "^0.7.3"
 transformers = "^4.51.3"
 yfinance = "^0.2.55"
 ta = "^0.11.0"
+gym = "^0.26.2"
 
 
 [tool.poetry.group.dev.dependencies]

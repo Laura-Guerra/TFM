@@ -203,6 +203,17 @@ files = [
 colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
+name = "cloudpickle"
+version = "3.1.1"
+description = "Pickler class to extend the standard pickle.Pickler functionality"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "cloudpickle-3.1.1-py3-none-any.whl", hash = "sha256:c8c5a44295039331ee9dad40ba100a9c7297b6f988e50e87ccdf3765a668350e"},
+    {file = "cloudpickle-3.1.1.tar.gz", hash = "sha256:b216fa8ae4019d5482a8ac3c95d8f6346115d8835911fd4aefd1a445e4242c64"},
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
@@ -538,6 +549,44 @@ distributed = ["Pyro4 (>=4.27)"]
 docs = ["POT", "Pyro4", "Pyro4 (>=4.27)", "annoy", "matplotlib", "memory-profiler", "nltk", "pandas", "pytest", "pytest-cov", "scikit-learn", "sphinx (==5.1.1)", "sphinx-gallery (==0.11.1)", "sphinxcontrib-napoleon (==0.7)", "sphinxcontrib.programoutput (==0.17)", "statsmodels", "testfixtures", "visdom (>=0.1.8,!=0.1.8.7)"]
 test = ["POT", "pytest", "pytest-cov", "testfixtures", "visdom (>=0.1.8,!=0.1.8.7)"]
 test-win = ["POT", "pytest", "pytest-cov", "testfixtures"]
+
+[[package]]
+name = "gym"
+version = "0.26.2"
+description = "Gym: A universal API for reinforcement learning environments"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "gym-0.26.2.tar.gz", hash = "sha256:e0d882f4b54f0c65f203104c24ab8a38b039f1289986803c7d02cdbe214fbcc4"},
+]
+
+[package.dependencies]
+cloudpickle = ">=1.2.0"
+gym_notices = ">=0.0.4"
+numpy = ">=1.18.0"
+
+[package.extras]
+accept-rom-license = ["autorom[accept-rom-license] (>=0.4.2,<0.5.0)"]
+all = ["ale-py (>=0.8.0,<0.9.0)", "box2d-py (==2.3.5)", "imageio (>=2.14.1)", "lz4 (>=3.1.0)", "matplotlib (>=3.0)", "moviepy (>=1.0.0)", "mujoco (==2.2)", "mujoco_py (>=2.1,<2.2)", "opencv-python (>=3.0)", "pygame (==2.1.0)", "pytest (==7.0.1)", "swig (==4.*)"]
+atari = ["ale-py (>=0.8.0,<0.9.0)"]
+box2d = ["box2d-py (==2.3.5)", "pygame (==2.1.0)", "swig (==4.*)"]
+classic-control = ["pygame (==2.1.0)"]
+mujoco = ["imageio (>=2.14.1)", "mujoco (==2.2)"]
+mujoco-py = ["mujoco_py (>=2.1,<2.2)"]
+other = ["lz4 (>=3.1.0)", "matplotlib (>=3.0)", "moviepy (>=1.0.0)", "opencv-python (>=3.0)"]
+testing = ["box2d-py (==2.3.5)", "imageio (>=2.14.1)", "lz4 (>=3.1.0)", "matplotlib (>=3.0)", "moviepy (>=1.0.0)", "mujoco (==2.2)", "mujoco_py (>=2.1,<2.2)", "opencv-python (>=3.0)", "pygame (==2.1.0)", "pytest (==7.0.1)", "swig (==4.*)"]
+toy-text = ["pygame (==2.1.0)"]
+
+[[package]]
+name = "gym-notices"
+version = "0.0.8"
+description = "Notices for gym"
+optional = false
+python-versions = "*"
+files = [
+    {file = "gym-notices-0.0.8.tar.gz", hash = "sha256:ad25e200487cafa369728625fe064e88ada1346618526102659b4640f2b4b911"},
+    {file = "gym_notices-0.0.8-py3-none-any.whl", hash = "sha256:e5f82e00823a166747b4c2a07de63b6560b1acb880638547e0cabf825a01e463"},
+]
 
 [[package]]
 name = "huggingface-hub"
@@ -2280,4 +2329,4 @@ repair = ["scipy (>=1.6.3)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "a206649a7bafced6897770b5b76a9168a6e49f4d79aecb8a5345306eb66f49a1"
+content-hash = "bcd3077ad06613291442a552bb968faae1938dce2a51716a5ad3fcc110640899"
