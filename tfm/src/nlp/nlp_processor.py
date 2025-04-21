@@ -7,8 +7,9 @@ from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
 from textblob import TextBlob
 
-
 from transformers import pipeline
+
+from tfm.src.nlp.text_processor import TextProcessor
 
 class NLProcessor:
     def __init__(
@@ -17,13 +18,16 @@ class NLProcessor:
         lda_topics=10,
         min_word_count=3,
         cutoff_date="2024-01-01",
-        use_finbert: bool = False
+        use_finbert: bool = False,
+        top_n: int = 5
     ):
         self.word2vec_dim = word2vec_dim
         self.lda_topics = lda_topics
         self.min_word_count = min_word_count
         self.cutoff_date = pd.to_datetime(cutoff_date).tz_localize("UTC")
         self.use_finbert = use_finbert
+        self.top_n = top_n
+        self.text_processor = TextProcessor(lang="english", use_lemmatizer=True)
 
         self.word2vec_model = None
         self.lda_model = None
@@ -113,7 +117,7 @@ class NLProcessor:
             logger.warning(f"Sentiment analysis failed: {e}")
             return 0.0
 
-    def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, df: pd.DataFrame) -> pd.DataFrame: # TODO eliminar funció
         logger.info(f"Transforming {len(df)} documents into NLP feature vectors...")
 
         df = df.reset_index(drop=True)
@@ -139,6 +143,137 @@ class NLProcessor:
 
         logger.success("Transformation completed.")
         return final_df
+
+    def _get_top_n_articles_as_text(self, df: pd.DataFrame) -> str:
+        """
+        Selects the top-N most sentimentally extreme articles from a DataFrame
+        and concatenates their full_text into a single string.
+
+        Args:
+            df: DataFrame containing at least 'full_text' and 'sentiment' columns.
+
+        Returns:
+            A single string with the concatenated full_texts of the top-N articles.
+        """
+        df = df.copy()
+        if "sentiment" not in df.columns:
+            df["sentiment"] = df["full_text"].apply(self.get_sentiment_score)
+
+        df["abs_sentiment"] = df["sentiment"].abs()
+        top_articles = df.sort_values("abs_sentiment", ascending=False).head(self.top_n)
+        return " ".join(top_articles["full_text"].tolist())
+
+    def transform_day_with_top_articles(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Processes the most relevant articles from a single day by:
+        - Selecting top-N articles by absolute sentiment
+        - Concatenating their text
+        - Computing NLP features (Word2Vec, LDA, sentiment)
+
+        Args:
+            df: DataFrame with all articles for a given date.
+
+        Returns:
+            DataFrame with a single row: NLP features for that day.
+        """
+        logger.info(f"Transforming {len(df)} documents → top {self.top_n} most relevant")
+
+        df = df.reset_index(drop=True)
+        concatenated_text = self._get_top_n_articles_as_text(df)
+
+        clean_text = self.text_processor.process_text(concatenated_text)
+        tokens = clean_text.split()
+
+        w2v_vec = self.get_doc_vector(tokens)
+        lda_vec = self.get_topic_vector(clean_text)
+        sentiment = self.get_sentiment_score(concatenated_text)
+        date = df["date"].iloc[0] if "date" in df.columns else pd.NaT
+
+        data = {
+            "date": date,
+            "full_text": concatenated_text,
+            "sentiment": sentiment,
+            **{f"w2v_{i}": w2v_vec[i] for i in range(len(w2v_vec))},
+            **{f"lda_{i}": lda_vec[i] for i in range(len(lda_vec))}
+        }
+
+        logger.success("Day-level NLP transformation completed.")
+        return pd.DataFrame([data])
+
+    def _transform_day_mean_of_top_articles(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Selects top-N articles by absolute sentiment, computes NLP vectors for each,
+        and returns the mean of all vectors.
+
+        Args:
+            df: DataFrame of news from one day.
+
+        Returns:
+            DataFrame with a single row of averaged NLP features.
+        """
+        df = df.copy()
+        df["sentiment"] = df["full_text"].apply(self.get_sentiment_score)
+        df["abs_sentiment"] = df["sentiment"].abs()
+        top_df = df.sort_values("abs_sentiment", ascending=False).head(self.top_n)
+
+        text_processor = self.text_processor
+        tokens_list = [text_processor.process_text(text).split() for text in top_df["full_text"]]
+
+        w2v_vectors = np.array([self.get_doc_vector(tokens) for tokens in tokens_list])
+        lda_vectors = np.array([self.get_topic_vector(" ".join(tokens)) for tokens in tokens_list])
+        sentiments = top_df["sentiment"].to_numpy()
+
+        w2v_mean = w2v_vectors.mean(axis=0)
+        lda_mean = lda_vectors.mean(axis=0)
+        sentiment_mean = sentiments.mean()
+        date = top_df["date"].iloc[0] if "date" in top_df.columns else pd.NaT
+
+        data = {
+            "date": date,
+            "full_text": " ".join(top_df["full_text"].tolist()),
+            "sentiment": sentiment_mean,
+            **{f"w2v_{i}": w2v_mean[i] for i in range(len(w2v_mean))},
+            **{f"lda_{i}": lda_mean[i] for i in range(len(lda_mean))}
+        }
+
+        return pd.DataFrame([data])
+
+    def transform_dataset_by_day(
+            self,
+            df: pd.DataFrame,
+            strategy: str = "concat"  # o "mean"
+    ) -> pd.DataFrame:
+        """
+        Transforms a news dataset grouped by date, using one of two strategies:
+        - "concat": top-N articles are concatenated and a single NLP vector is computed.
+        - "mean": top-N articles are processed individually and their vectors averaged.
+
+        Args:
+            df: DataFrame with 'date' and 'full_text' columns.
+            strategy: Aggregation strategy, either "concat" or "mean".
+
+        Returns:
+            DataFrame with one row per day and NLP vectors.
+        """
+        assert strategy in ["concat", "mean"], "strategy must be 'concat' or 'mean'"
+
+        logger.info(f"Starting NLP transformation by day using strategy: {strategy}")
+        results = []
+
+        for date, group in df.groupby("date"):
+            try:
+                if strategy == "concat":
+                    day_vector = self.transform_day_with_top_articles(group)
+                else:  # "mean"
+                    day_vector = self._transform_day_mean_of_top_articles(group)
+                results.append(day_vector)
+            except Exception as e:
+                logger.warning(f"Skipping date {date} due to error: {e}")
+
+        final_df = pd.concat(results, ignore_index=True)
+        logger.success(f"Transformation completed for {len(final_df)} days.")
+        return final_df
+
 
     def save(self, path: str):
         logger.info(f"Saving NLP models to {path}")
