@@ -19,9 +19,8 @@ news_processor = NewsProcessor(
 news_with_text = news_processor.unify_text(news_df, keywords_df)
 
 # %% Clean text for NLP
-a = news_with_text[:100]
 text_processor = TextProcessor(lang="english", use_lemmatizer=True)
-news_final = text_processor.apply(a, text_column="full_text")
+news_final = text_processor.apply(news_with_text, text_column="full_text")
 
 # %% Save output
 news_final.to_csv(PATH_DATA_PROCESSED / "articles_final_nlp.csv", index=False)
