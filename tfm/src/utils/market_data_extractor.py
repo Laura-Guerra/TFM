@@ -6,7 +6,7 @@ from loguru import logger
 
 
 class MarketDataExtractor:
-    def __init__(self, tickers: list[str], start: str = "2010-01-01", end: str = "2025-01-01"):
+    def __init__(self, tickers: list[str], start: str = "2014-01-01", end: str = "2025-04-21"):
         """
         Initializes the engineer with asset tickers and date range.
 
