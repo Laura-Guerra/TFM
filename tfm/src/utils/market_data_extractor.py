@@ -20,24 +20,17 @@ class MarketDataExtractor:
         self.end = end
 
     def fetch_data(self, ticker: str) -> pd.DataFrame:
-        """
-        Downloads historical data for a given ticker using yfinance.
-
-        Args:
-            ticker: Stock ticker.
-
-        Returns:
-            DataFrame with historical price data.
-        """
         logger.debug(f"Downloading data for {ticker}")
-        df = yf.download(ticker, start=self.start, end=self.end)
+
+        start_download = (pd.to_datetime(self.start) - pd.DateOffset(days=60)).strftime("%Y-%m-%d")
+
+        df = yf.download(ticker, start=start_download, end=self.end)
         if df.empty:
             logger.warning(f"No data found for ticker: {ticker}")
             return pd.DataFrame()
 
         df = df.reset_index()
-        df["date"] = pd.to_datetime(df["Date"]).dt.tz_localize("UTC")
-        df.drop(columns=["Date"], inplace=True)
+        df = df.rename(columns={"Date": "date"})
         df["ticker"] = ticker
         return df
 
@@ -57,19 +50,13 @@ class MarketDataExtractor:
         return df
 
     def process_ticker(self, ticker: str) -> pd.DataFrame:
-        """
-        Downloads and processes all data for one ticker.
-
-        Args:
-            ticker: Stock ticker.
-
-        Returns:
-            Final cleaned DataFrame with indicators.
-        """
         df = self.fetch_data(ticker)
         if df.empty:
             return pd.DataFrame()
+
         df = self.compute_indicators(df)
+        df = df[(df["date"] >= pd.to_datetime(self.start)) & (df["date"] <= pd.to_datetime(self.end))]
+
         df = df[["date", "ticker", "Open", "High", "Low", "Close", "Volume", "sma_20", "rsi_14", "macd"]]
         df.dropna(inplace=True)
         return df
@@ -92,6 +79,7 @@ class MarketDataExtractor:
             raise ValueError("No market data retrieved for any ticker.")
 
         df_final = pd.concat(results).sort_values(by=["date", "ticker"]).reset_index(drop=True)
+        df_final.columns = df_final.columns.droplevel(1)
         logger.success(f"Built dataset for {len(results)} tickers.")
         return df_final
 
