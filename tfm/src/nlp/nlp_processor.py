@@ -241,7 +241,8 @@ class NLProcessor:
     def transform_dataset_by_day(
             self,
             df: pd.DataFrame,
-            strategy: str = "concat"  # o "mean"
+            strategy: str = "concat",  # o "mean"
+            market: str = "us"
     ) -> pd.DataFrame:
         """
         Transforms a news dataset grouped by date, using one of two strategies:
@@ -251,27 +252,33 @@ class NLProcessor:
         Args:
             df: DataFrame with 'date' and 'full_text' columns.
             strategy: Aggregation strategy, either "concat" or "mean".
+            market: us or eu.
 
         Returns:
             DataFrame with one row per day and NLP vectors.
         """
         assert strategy in ["concat", "mean"], "strategy must be 'concat' or 'mean'"
+        assert market in ["us", "eu"], "market must be 'us' or 'eu'"
 
-        logger.info(f"Starting NLP transformation by day using strategy: {strategy}")
+        logger.info(f"Starting NLP transformation for market: {market} using strategy: {strategy}")
         results = []
 
-        for date, group in df.groupby("date"):
+        for date, group in df.groupby("market_date"):
             try:
+                group["date"] = date
                 if strategy == "concat":
                     day_vector = self.transform_day_with_top_articles(group)
-                else:  # "mean"
+                else:
                     day_vector = self._transform_day_mean_of_top_articles(group)
                 results.append(day_vector)
             except Exception as e:
-                logger.warning(f"Skipping date {date} due to error: {e}")
+                logger.warning(f"Skipping date {date} for market {market}: {e}")
 
         final_df = pd.concat(results, ignore_index=True)
-        logger.success(f"Transformation completed for {len(final_df)} days.")
+        final_df = final_df.add_suffix(f"_{market}")
+        final_df.rename(columns={f"date_{market}": "date"}, inplace=True)
+
+        logger.success(f"Finished transformation for {len(final_df)} days of market: {market}")
         return final_df
 
 
