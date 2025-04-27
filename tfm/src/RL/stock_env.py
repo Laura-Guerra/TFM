@@ -39,8 +39,20 @@ class MarketEnv(gym.Env):
         return self._get_obs()
 
     def _get_obs(self):
-        row = self.df.iloc[self.current_step]
-        obs = row.drop(["date"]).values.astype(np.float32)
+        row_d = self.df.iloc[self.current_step]  # Notícies del dia d (les pots veure)
+        row_d_1 = self.df.iloc[self.current_step - 1]  # Tècnics del dia anterior
+
+        # Separem tècnics i NLP
+        tech_cols = ["sma_20", "rsi_14", "macd"]  # o les que tu tinguis
+        nlp_cols = [col for col in self.df.columns if col.startswith(("w2v_", "lda_", "sentiment"))]
+
+        # Agafa els valors tècnics de d-1, NLP de d
+        obs = row_d_1[tech_cols].tolist() + row_d[nlp_cols].tolist()
+
+        obs += [self.balance, self.shares_held, row_d["Close"]]
+
+        return np.array(obs, dtype=np.float32)
+
         current_price = row["Close"]
         return np.concatenate([
             obs,
@@ -51,46 +63,46 @@ class MarketEnv(gym.Env):
 
     def step(self, action: int):
         row = self.df.iloc[self.current_step]
-        current_price = row["Close"]
+        execution_price = row["Open"]
 
         if action == 1:  # Buy 25%
             amount = 0.25
-            shares = int((self.balance * amount) // current_price)
-            self.balance -= shares * current_price
+            shares = int((self.balance * amount) // execution_price)
+            self.balance -= shares * execution_price
             self.shares_held += shares
 
         elif action == 2:  # Buy 50%
             amount = 0.50
-            shares = int((self.balance * amount) // current_price)
-            self.balance -= shares * current_price
+            shares = int((self.balance * amount) // execution_price)
+            self.balance -= shares * execution_price
             self.shares_held += shares
 
         elif action == 3:  # Buy 100%
-            shares = int(self.balance // current_price)
-            self.balance -= shares * current_price
+            shares = int(self.balance // execution_price)
+            self.balance -= shares * execution_price
             self.shares_held += shares
 
         elif action == 4:  # Sell 25%
             shares = int(self.shares_held * 0.25)
-            self.balance += shares * current_price
+            self.balance += shares * execution_price
             self.shares_held -= shares
 
         elif action == 5:  # Sell 50%
             shares = int(self.shares_held * 0.50)
-            self.balance += shares * current_price
+            self.balance += shares * execution_price
             self.shares_held -= shares
 
         elif action == 6:  # Sell 100%
-            self.balance += self.shares_held * current_price
+            self.balance += self.shares_held * execution_price
             self.shares_held = 0
 
         # Reward
-        self.net_worth = self.balance + self.shares_held * current_price
+        self.net_worth = self.balance + self.shares_held * execution_price
         reward = self.net_worth - self.previous_net_worth
         self.previous_net_worth = self.net_worth
 
         self.current_step += 1
-        done = self.current_step >= len(self.df) - 1
+        done = self.current_step >= len(self.df) - 2  # perquè fem servir t+1
         truncated = self.net_worth <= self.initial_balance * 0.25
 
         return self._get_obs(), reward, done, truncated, {}
