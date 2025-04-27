@@ -8,25 +8,34 @@ from loguru import logger
 class MarketEnv(gym.Env):
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self, df: pd.DataFrame, initial_balance: float = 10000.0):
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        initial_balance: float = 10000.0,
+        continuous_actions: bool = False,
+    ):
         super().__init__()
 
         self.df = df.reset_index(drop=True)
         self.initial_balance = initial_balance
+        self.continuous_actions = continuous_actions
 
-        # Detectar actius
+        # Asset detection
         self.asset_list = self.df["ticker"].unique().tolist()
         self.num_assets = len(self.asset_list)
 
-        # Accions possibles per actiu: 0=Hold, 1=Buy25%, 2=Buy50%, 3=Buy100%, 4=Sell25%, 5=Sell50%, 6=Sell100%
-        self.action_space = spaces.MultiDiscrete([7] * self.num_assets)
+        # Define action space
+        if self.continuous_actions:
+            self.action_space = spaces.Box(low=-1, high=1, shape=(self.num_assets,), dtype=np.float32)
+        else:
+            self.action_space = spaces.MultiDiscrete([7] * self.num_assets)
 
-        # Observació: tot l'estat rellevant
+        # Observation = technical indicators + nlp + balance + net worth per asset
         self.feature_columns = [col for col in self.df.columns if col not in ["date", "ticker", "Open"]]
         self.observation_space = spaces.Box(
             low=-np.inf,
             high=np.inf,
-            shape=(len(self.feature_columns) * self.num_assets + 2,),  # features + balance + net worth
+            shape=(len(self.feature_columns) * self.num_assets + 2,),
             dtype=np.float32
         )
 
@@ -43,12 +52,11 @@ class MarketEnv(gym.Env):
     def _get_obs(self):
         rows = []
         for asset in self.asset_list:
-            asset_row = self.df[(self.df["ticker"] == asset)].iloc[self.current_step]
+            asset_row = self.df[self.df["ticker"] == asset].iloc[self.current_step]
             features = asset_row[self.feature_columns].values
             rows.append(features)
 
         rows = np.concatenate(rows)
-
         obs = np.concatenate([
             rows,
             [self.balance],
@@ -56,12 +64,13 @@ class MarketEnv(gym.Env):
         ])
         return obs.astype(np.float32)
 
-    def step(self, actions: np.ndarray):
-        """
-        Args:
-            actions: array d'accions per actiu (valor entre 0 i 6)
-        """
+    def step(self, actions):
         total_reward = 0.0
+
+        if self.continuous_actions:
+            actions = np.clip(actions, -1, 1)
+        else:
+            actions = np.array(actions)
 
         for i, action in enumerate(actions):
             asset = self.asset_list[i]
@@ -73,21 +82,10 @@ class MarketEnv(gym.Env):
             row = asset_df.iloc[self.current_step]
             execution_price = row["Open"]
 
-            # Buy actions
-            if action == 1:
-                self._buy_asset(i, execution_price, 0.25)
-            elif action == 2:
-                self._buy_asset(i, execution_price, 0.5)
-            elif action == 3:
-                self._buy_asset(i, execution_price, 1.0)
-
-            # Sell actions
-            elif action == 4:
-                self._sell_asset(i, execution_price, 0.25)
-            elif action == 5:
-                self._sell_asset(i, execution_price, 0.5)
-            elif action == 6:
-                self._sell_asset(i, execution_price, 1.0)
+            if self.continuous_actions:
+                self._continuous_action_logic(i, execution_price, action)
+            else:
+                self._discrete_action_logic(i, execution_price, action)
 
         self.current_step += 1
 
@@ -106,6 +104,33 @@ class MarketEnv(gym.Env):
         truncated = self.net_worth <= self.initial_balance * 0.25
 
         return self._get_obs(), reward, done, truncated, {}
+
+    def _continuous_action_logic(self, asset_idx: int, price: float, action_value: float):
+        if action_value > 0:  # Buy
+            amount_to_invest = self.balance * action_value
+            shares = int(amount_to_invest // price)
+            if shares > 0:
+                self.balance -= shares * price
+                self.shares_held[asset_idx] += shares
+        elif action_value < 0:  # Sell
+            shares_to_sell = int(self.shares_held[asset_idx] * (-action_value))
+            if shares_to_sell > 0:
+                self.shares_held[asset_idx] -= shares_to_sell
+                self.balance += shares_to_sell * price
+
+    def _discrete_action_logic(self, asset_idx: int, price: float, action: int):
+        if action == 1:  # Buy 25%
+            self._buy_asset(asset_idx, price, 0.25)
+        elif action == 2:  # Buy 50%
+            self._buy_asset(asset_idx, price, 0.5)
+        elif action == 3:  # Buy 100%
+            self._buy_asset(asset_idx, price, 1.0)
+        elif action == 4:  # Sell 25%
+            self._sell_asset(asset_idx, price, 0.25)
+        elif action == 5:  # Sell 50%
+            self._sell_asset(asset_idx, price, 0.5)
+        elif action == 6:  # Sell 100%
+            self._sell_asset(asset_idx, price, 1.0)
 
     def _buy_asset(self, asset_idx: int, price: float, proportion: float):
         available_cash = self.balance * proportion
