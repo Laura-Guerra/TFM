@@ -50,6 +50,6 @@ def compute_effective_market_date(pub_date_str: str, market: str = "us") -> pd.T
     cutoff_time = market_open - pd.Timedelta(hours=1)
 
     if pub_dt_local >= cutoff_time:
-        return (pub_dt_local + pd.Timedelta(days=1)).date()
-    else:
         return pub_date_only
+    else:
+        return (pub_dt_local - pd.Timedelta(days=1)).date()
