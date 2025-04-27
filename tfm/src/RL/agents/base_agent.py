@@ -20,7 +20,7 @@ class BaseAgent:
 
     def train(self, total_timesteps: int):
         checkpoint_callback = CheckpointCallback(
-            save_freq=10_000,  # Every 10k steps
+            save_freq=100,  # Every 10k steps
             save_path=str(self.model_dir / "checkpoints"),
             name_prefix=self.model_name
         )
@@ -29,7 +29,7 @@ class BaseAgent:
             self.eval_env,
             best_model_save_path=str(self.model_dir / "best_model"),
             log_path=str(self.log_dir),
-            eval_freq=10_000,
+            eval_freq=100,
             deterministic=True,
             render=False
         )
