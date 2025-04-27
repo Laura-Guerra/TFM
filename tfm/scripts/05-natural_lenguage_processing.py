@@ -3,7 +3,7 @@
 import pandas as pd
 from pathlib import Path
 from tfm.src.config.settings import PATH_DATA_PROCESSED
-from tfm.src.nlp.nlp_processor import NLProcessor
+from tfm.src.NLP.nlp_processor import NLProcessor
 
 # Params
 CUTOFF_DATE = "2024-01-01"

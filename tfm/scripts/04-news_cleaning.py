@@ -4,8 +4,8 @@ import pandas as pd
 from loguru import logger
 
 from tfm.src.config.settings import PATH_DATA_PROCESSED
-from tfm.src.nlp.news_processor import NewsProcessor
-from tfm.src.nlp.text_processor import TextProcessor
+from tfm.src.NLP.news_processor import NewsProcessor
+from tfm.src.NLP.text_processor import TextProcessor
 from tfm.src.utils.generate_new_market_date import compute_effective_market_date
 
 # %% Load data

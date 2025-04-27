@@ -9,7 +9,7 @@ from textblob import TextBlob
 
 from transformers import pipeline
 
-from tfm.src.nlp.text_processor import TextProcessor
+from tfm.src.NLP.text_processor import TextProcessor
 
 class NLProcessor:
     def __init__(
