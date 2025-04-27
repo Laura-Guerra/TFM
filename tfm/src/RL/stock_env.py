@@ -8,104 +8,117 @@ from loguru import logger
 class MarketEnv(gym.Env):
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self, df: pd.DataFrame, initial_balance: float = 10000):
+    def __init__(self, df: pd.DataFrame, initial_balance: float = 10000.0):
         super().__init__()
 
         self.df = df.reset_index(drop=True)
         self.initial_balance = initial_balance
-        self.current_step = 0
 
-        self.balance = initial_balance
-        self.shares_held = 0
-        self.net_worth = initial_balance
-        self.previous_net_worth = initial_balance
+        # Detectar actius
+        self.asset_list = self.df["ticker"].unique().tolist()
+        self.num_assets = len(self.asset_list)
 
-        # 7 discrete actions: hold, buy/sell (25%, 50%, 100%)
-        self.action_space = spaces.Discrete(7)
+        # Accions possibles per actiu: 0=Hold, 1=Buy25%, 2=Buy50%, 3=Buy100%, 4=Sell25%, 5=Sell50%, 6=Sell100%
+        self.action_space = spaces.MultiDiscrete([7] * self.num_assets)
 
-        # Observation = features from df + balance + shares + current price
+        # Observació: tot l'estat rellevant
+        self.feature_columns = [col for col in self.df.columns if col not in ["date", "ticker", "Open"]]
         self.observation_space = spaces.Box(
-            low=-np.inf, high=np.inf,
-            shape=(len(self.df.columns) - 1 + 3,),  # exclude date + 3 (balance, shares, price)
+            low=-np.inf,
+            high=np.inf,
+            shape=(len(self.feature_columns) * self.num_assets + 2,),  # features + balance + net worth
             dtype=np.float32
         )
+
+        self.reset()
 
     def reset(self):
         self.current_step = 0
         self.balance = self.initial_balance
-        self.shares_held = 0
+        self.shares_held = np.zeros(self.num_assets, dtype=np.float32)
         self.net_worth = self.initial_balance
         self.previous_net_worth = self.initial_balance
         return self._get_obs()
 
     def _get_obs(self):
-        row_d = self.df.iloc[self.current_step]  # Notícies del dia d (les pots veure)
-        row_d_1 = self.df.iloc[self.current_step - 1]  # Tècnics del dia anterior
+        rows = []
+        for asset in self.asset_list:
+            asset_row = self.df[(self.df["ticker"] == asset)].iloc[self.current_step]
+            features = asset_row[self.feature_columns].values
+            rows.append(features)
 
-        # Separem tècnics i NLP
-        tech_cols = ["sma_20", "rsi_14", "macd"]  # o les que tu tinguis
-        nlp_cols = [col for col in self.df.columns if col.startswith(("w2v_", "lda_", "sentiment"))]
+        rows = np.concatenate(rows)
 
-        # Agafa els valors tècnics de d-1, NLP de d
-        obs = row_d_1[tech_cols].tolist() + row_d[nlp_cols].tolist()
-
-        obs += [self.balance, self.shares_held, row_d["Close"]]
-
-        return np.array(obs, dtype=np.float32)
-
-        current_price = row["Close"]
-        return np.concatenate([
-            obs,
+        obs = np.concatenate([
+            rows,
             [self.balance],
-            [self.shares_held],
-            [current_price]
+            [self.net_worth]
         ])
+        return obs.astype(np.float32)
 
-    def step(self, action: int):
-        row = self.df.iloc[self.current_step]
-        execution_price = row["Open"]
+    def step(self, actions: np.ndarray):
+        """
+        Args:
+            actions: array d'accions per actiu (valor entre 0 i 6)
+        """
+        total_reward = 0.0
 
-        if action == 1:  # Buy 25%
-            amount = 0.25
-            shares = int((self.balance * amount) // execution_price)
-            self.balance -= shares * execution_price
-            self.shares_held += shares
+        for i, action in enumerate(actions):
+            asset = self.asset_list[i]
+            asset_df = self.df[self.df["ticker"] == asset].reset_index(drop=True)
 
-        elif action == 2:  # Buy 50%
-            amount = 0.50
-            shares = int((self.balance * amount) // execution_price)
-            self.balance -= shares * execution_price
-            self.shares_held += shares
+            if self.current_step >= len(asset_df):
+                continue
 
-        elif action == 3:  # Buy 100%
-            shares = int(self.balance // execution_price)
-            self.balance -= shares * execution_price
-            self.shares_held += shares
+            row = asset_df.iloc[self.current_step]
+            execution_price = row["Open"]
 
-        elif action == 4:  # Sell 25%
-            shares = int(self.shares_held * 0.25)
-            self.balance += shares * execution_price
-            self.shares_held -= shares
+            # Buy actions
+            if action == 1:
+                self._buy_asset(i, execution_price, 0.25)
+            elif action == 2:
+                self._buy_asset(i, execution_price, 0.5)
+            elif action == 3:
+                self._buy_asset(i, execution_price, 1.0)
 
-        elif action == 5:  # Sell 50%
-            shares = int(self.shares_held * 0.50)
-            self.balance += shares * execution_price
-            self.shares_held -= shares
+            # Sell actions
+            elif action == 4:
+                self._sell_asset(i, execution_price, 0.25)
+            elif action == 5:
+                self._sell_asset(i, execution_price, 0.5)
+            elif action == 6:
+                self._sell_asset(i, execution_price, 1.0)
 
-        elif action == 6:  # Sell 100%
-            self.balance += self.shares_held * execution_price
-            self.shares_held = 0
+        self.current_step += 1
 
-        # Reward
-        self.net_worth = self.balance + self.shares_held * execution_price
+        # Update net worth
+        self.net_worth = self.balance
+        for i, asset in enumerate(self.asset_list):
+            asset_df = self.df[self.df["ticker"] == asset].reset_index(drop=True)
+            if self.current_step < len(asset_df):
+                price = asset_df.iloc[self.current_step]["Close"]
+                self.net_worth += self.shares_held[i] * price
+
         reward = self.net_worth - self.previous_net_worth
         self.previous_net_worth = self.net_worth
 
-        self.current_step += 1
-        done = self.current_step >= len(self.df) - 2  # perquè fem servir t+1
+        done = self.current_step >= min([len(self.df[self.df["ticker"] == asset]) for asset in self.asset_list]) - 2
         truncated = self.net_worth <= self.initial_balance * 0.25
 
         return self._get_obs(), reward, done, truncated, {}
 
+    def _buy_asset(self, asset_idx: int, price: float, proportion: float):
+        available_cash = self.balance * proportion
+        shares = int(available_cash // price)
+        if shares > 0:
+            self.shares_held[asset_idx] += shares
+            self.balance -= shares * price
+
+    def _sell_asset(self, asset_idx: int, price: float, proportion: float):
+        shares_to_sell = int(self.shares_held[asset_idx] * proportion)
+        if shares_to_sell > 0:
+            self.shares_held[asset_idx] -= shares_to_sell
+            self.balance += shares_to_sell * price
+
     def render(self, mode="human"):
-        logger.info(f"Step {self.current_step} | Balance: {self.balance:.2f} | Shares: {self.shares_held} | Net Worth: {self.net_worth:.2f}")
+        logger.info(f"Step {self.current_step} | Balance: {self.balance:.2f} | Net Worth: {self.net_worth:.2f} | Holdings: {self.shares_held}")
