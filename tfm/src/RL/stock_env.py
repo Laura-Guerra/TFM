@@ -39,6 +39,15 @@ class MarketEnv(gym.Env):
             dtype=np.float32
         )
 
+        # Initialize history logging
+        self.history = {
+            "step": [],
+            "date": [],
+            "balance": [],
+            "net_worth": [],
+            "shares_held": []
+        }
+
         self.reset()
 
     def reset(self):
@@ -100,6 +109,13 @@ class MarketEnv(gym.Env):
         reward = self.net_worth - self.previous_net_worth
         self.previous_net_worth = self.net_worth
 
+        # Log the current state
+        self.history["step"].append(self.current_step)
+        self.history["date"].append(self.df["date"].iloc[self.current_step])
+        self.history["balance"].append(self.balance)
+        self.history["net_worth"].append(self.net_worth)
+        self.history["shares_held"].append(self.shares_held.copy())
+
         done = self.current_step >= min(len(self.df[self.df["ticker"] == asset]) for asset in self.asset_list) - 2
         truncated = self.net_worth <= self.initial_balance * 0.10
 
@@ -147,3 +163,11 @@ class MarketEnv(gym.Env):
 
     def render(self, mode="human"):
         logger.info(f"Step {self.current_step} | Balance: {self.balance:.2f} | Net Worth: {self.net_worth:.2f} | Holdings: {self.shares_held}")
+
+    def save_history(self, path: str):
+        """
+        Save the history of the simulation to a CSV file for further analysis.
+        """
+        df_history = pd.DataFrame(self.history)
+        df_history.to_csv(path, index=False)
+        logger.info(f"✅ History saved to {path}")
