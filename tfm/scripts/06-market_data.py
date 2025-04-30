@@ -1,7 +1,7 @@
 from tfm.src.config.settings import PATH_DATA_PROCESSED
 from tfm.src.utils.market_data_extractor import MarketDataExtractor
 
-tickers = ["SPY"]
+tickers = ["SPY", "GLD"]
 market_extractor = MarketDataExtractor(tickers)
 
 df_market = market_extractor.build_dataset()
