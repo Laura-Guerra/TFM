@@ -164,10 +164,38 @@ class MarketEnv(gym.Env):
     def render(self, mode="human"):
         logger.info(f"Step {self.current_step} | Balance: {self.balance:.2f} | Net Worth: {self.net_worth:.2f} | Holdings: {self.shares_held}")
 
+    def compute_metrics(self, risk_free_rate: float = 0.0) -> dict:
+        """
+        Compute financial metrics from the logged history.
+        """
+        df = pd.DataFrame(self.history)
+        net_worth = df["net_worth"].values
+        returns = np.diff(net_worth) / net_worth[:-1]
+
+        sharpe = (returns.mean() - risk_free_rate) / (returns.std() + 1e-8) * np.sqrt(252)
+        sortino = (returns.mean() - risk_free_rate) / (returns[returns < 0].std() + 1e-8) * np.sqrt(252)
+        cum_max = np.maximum.accumulate(net_worth)
+        drawdown = (net_worth - cum_max) / cum_max
+        max_drawdown = drawdown.min()
+        volatility = returns.std() * np.sqrt(252)
+
+        return {
+            "Sharpe Ratio": sharpe,
+            "Sortino Ratio": sortino,
+            "Max Drawdown": max_drawdown,
+            "Volatility": volatility
+        }
+
     def save_history(self, path: str):
         """
-        Save the history of the simulation to a CSV file for further analysis.
+        Save the history of the simulation and computed metrics to a CSV and JSON file.
         """
         df_history = pd.DataFrame(self.history)
         df_history.to_csv(path, index=False)
         logger.info(f"✅ History saved to {path}")
+
+        # Save metrics to separate file
+        metrics = self.compute_metrics()
+        metrics_path = path.replace(".csv", "_metrics.json")
+        pd.Series(metrics).to_json(metrics_path, indent=4)
+        logger.info(f"Metrics saved to {metrics_path}")

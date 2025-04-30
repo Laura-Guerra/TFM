@@ -97,86 +97,86 @@ citecolor=blue,
 \subsection{Context i motivació}
 \sloppy
 
-En els darrers anys, els algorismes han revolucionat el món de la inversió, transformant el mercat bursàtil. No obstant això, la majoria d’aquests models es basen principalment en dades històriques, com preus, volums i altres indicadors quantitatius. Tot i la seva utilitat, aquest enfocament ignora factors externs que poden influir de manera significativa en els mercats, com ara decisions polítiques o la percepció pública davant d’esdeveniments globals. Així, es deixa de banda una font d’informació clau: l’actualitat financera, política, empresarial i econòmica que influeix en el mercat des de l’exterior.
+En els darrers anys, els algorismes han revolucionat el món de la inversió, transformant el mercat bursàtil. No obstant això, la majoria d'aquests models es basen principalment en dades històriques, com preus, volums i altres indicadors quantitatius. Tot i la seva utilitat, aquest enfocament ignora factors externs que poden influir de manera significativa en els mercats, com ara decisions polítiques o la percepció pública davant d'esdeveniments globals. Així, es deixa de banda una font d'informació clau: l'actualitat financera, política, empresarial i econòmica que influeix en el mercat des de l'exterior.
 
 L’objectiu d’aquest projecte és explorar com la integració d’informació extreta de notícies pot millorar la capacitat predictiva i la presa de decisions d’un agent d’inversió basat en Aprenentatge per Reforç Profund (Deep Reinforcement Learning, en endavant DRL). Es pretén analitzar si la combinació de dades quantitatives (com preus, volums i altres indicadors històrics) i qualitatives pot oferir un avantatge respecte als enfocaments tradicionals basats exclusivament en dades estructurades.
 
-Les dades qualitatives utilitzades en aquest projecte provenen de notícies, que es processen mitjançant tècniques avançades de tractament del llenguatge natural (Natural Language Processing, en endavant NLP). Aquestes t+ecniques són la freqüència de terme – freqüència inversa en documents (Term Frequency–Inverse Document Frequency, a partir d’ara TF-IDF), la modelització de temes i l’anàlisi de sentiments.
+Les dades qualitatives utilitzades en aquest projecte provenen de notícies, que es processen mitjançant tècniques avançades de tractament del llenguatge natural (Natural Language Processing, en endavant NLP). Aquestes tècniques són la freqüència de terme – freqüència inversa en documents (Term Frequency–Inverse Document Frequency, a partir d’ara TF-IDF), la modelització de temes i l’anàlisi de sentiments.
 
-La rellevància d’aquest estudi rau en el fet que vivim en un món interconnectat, on la informació es transmet de manera gairebé instantània. Canvis polítics, conflictes geopolítics o notícies rellevants sobre grans corporacions poden desencadenar reaccions immediates als mercats. Aquest escenari dinàmic exigeix que les estratègies d’inversió siguin més flexibles, adaptatives i capaces d’incorporar informació contextual actualitzada.
+La rellevància d'aquest estudi rau en el fet que vivim en un món interconnectat, on la informació es transmet de manera gairebé instantània. Canvis polítics, conflictes geopolítics o notícies rellevants sobre grans corporacions poden desencadenar reaccions immediates als mercats. Aquest escenari dinàmic exigeix que les estratègies d'inversió siguin més flexibles, adaptatives i capaces d'incorporar informació contextual actualitzada.
 
-El projecte proposa el desenvolupament d’un agent d’inversió basat en DRL que integri tant dades financeres com notícies processades mitjançant tècniques de NLP. S’avaluaran tres algoritmes de DRL (DQN, PPO i SAC) per determinar quin s’adapta millor a aquest enfocament. La comparació es durà a terme mitjançant mètriques financeres com el Sharpe Ratio, el Drawdown i el retorn esperat, amb l’objectiu de demostrar si l’ús d’informació qualitativa pot millorar la presa de decisions d’inversió i com varien els resultats entre cadascun dels models.
+El projecte proposa el desenvolupament d'un agent d'inversió basat en DRL que integri tant dades financeres com notícies processades mitjançant tècniques de NLP. S'avaluaran tres algoritmes de DRL (DQN, PPO i SAC) per determinar quin s'adapta millor a aquest enfocament. La comparació es durà a terme mitjançant mètriques financeres com el Sharpe Ratio, el Drawdown i el retorn esperat, amb l'objectiu de demostrar si l'ús d'informació qualitativa pot millorar la presa de decisions d'inversió i com varien els resultats entre cadascun dels models.
 
-A nivell personal, aquest treball representa una oportunitat per aprofundir i formar-me en dos àmbits que em resulten molt interessants: les finances i l’aprenentatge per reforç. Tot i que no disposo d’una formació financera extensa, sempre m’ha interessat comprendre quins factors impulsen les fluctuacions dels mercats.
+A nivell personal, aquest treball representa una oportunitat per aprofundir i formar-me en dos àmbits que em resulten molt interessants: les finances i l'aprenentatge per reforç. Tot i que no disposo d'una formació financera extensa, sempre m'ha interessat comprendre quins factors impulsen les fluctuacions dels mercats.
 
-D’altra banda, l’aprenentatge per reforç és una branca del machine learning que, tot i allunyar-se del que faig habitualment, considero rellevant per a la presa de decisions autònomes en entorns de risc, com els mercats financers, on tradicionalment els humans han pres decisions basant-se més en la seva experiència i coneixement que únicament en les dades disponibles. M’agrada el repte d'haver de tractar les dades qualitatives mitjançant tècniques de NLP per integrar aquesta informació al model per proporcionar a l’agent d’inversió un context més ampli i precís.
+D'altra banda, l'aprenentatge per reforç és una branca del machine learning que, tot i allunyar-se del que faig habitualment, considero rellevant per a la presa de decisions autònomes en entorns de risc, com els mercats financers, on tradicionalment els humans han pres decisions basant-se més en la seva experiència i coneixement que únicament en les dades disponibles. M'agrada el repte d'haver de tractar les dades qualitatives mitjançant tècniques de NLP per integrar aquesta informació al model per proporcionar a l'agent d'inversió un context més ampli i precís.
 
 \subsection{Objectius}
-L'objectiu principal d'aquest treball és desenvolupar un agent d’inversió basat en Aprenentatge per Reforç Profund (DRL) que integri informació financera i notícies processades mitjançant tècniques avançades de NLP per a la presa de decisions d'inversió. L’agent serà entrenat en un entorn de simulació de mercat i s’avaluarà el seu rendiment comparant-lo amb estratègies tradicionals. Aquest objectiu principal comporta els següents objectius parcials
+L'objectiu principal d'aquest treball és desenvolupar un agent d'inversió basat en Aprenentatge per Reforç Profund (DRL) que integri informació financera i notícies processades mitjançant tècniques avançades de NLP per a la presa de decisions d'inversió. L'agent serà entrenat en un entorn de simulació de mercat i s'avaluarà el seu rendiment comparant-lo amb estratègies tradicionals. Aquest objectiu principal comporta els següents objectius parcials
 
 \begin{itemize}
-    \item \textbf{Processament i transformació de les dades relacionades amb notícies financeres}  
+    \item \textbf{Processament i transformació de les dades relacionades amb notícies financeres}
     \begin{itemize}
-        \item[--] Obtenció de les notícies a través de les APIs proporcionades per diferents diaris.  
-        \item[--] Implementació de tècniques de NLP per processar els titulars de les notícies.  
-        \item[--] Integració de les dades processades en l’entorn de simulació per utilitzar-les en la presa de decisions de l’agent.  
+        \item[--] Obtenció de les notícies a través de les APIs proporcionades per diferents diaris.
+        \item[--] Implementació de tècniques de NLP per processar els titulars de les notícies.
+        \item[--] Integració de les dades processades en l'entorn de simulació per utilitzar-les en la presa de decisions de l'agent.
     \end{itemize}
-    
-    \item \textbf{Disseny de l'entorn de simulació}  
+
+    \item \textbf{Disseny de l'entorn de simulació}
     \begin{itemize}
-        \item[--] Creació de l'entorn de mercat financer utilitzant OpenAI Gym\cite{OpenAIGym}.  
-        \item[--] Definició de l’espai d’estats, incloent-hi indicadors financers i les dades relacionades amb les notícies.  
+        \item[--] Creació de l'entorn de mercat financer utilitzant OpenAI Gym\cite{OpenAIGym}.
+        \item[--] Definició de l'espai d'estats, incloent-hi indicadors financers i les dades relacionades amb les notícies.
         \item[--] Definició de les accions i disseny de la funció de recompensa.
-    \end{itemize}  
-    
-    \item \textbf{Implementació i comparació de diferents algoritmes de DRL}  
+    \end{itemize}
+
+    \item \textbf{Implementació i comparació de diferents algoritmes de DRL}
     \begin{itemize}
-        \item[--] Creació i entrenament de tres models d’Aprenentatge per Reforç: DQN, PPO i SAC.  
-        \item[--] Ajust d’hiperparàmetres per optimitzar el procés d’aprenentatge.  
-        \item[--] Comparació dels tres models.  
-    \end{itemize}  
-    
-    \item \textbf{Avaluació del rendiment de l'agent i comparació amb estratègies tradicionals}  
+        \item[--] Creació i entrenament de tres models d'Aprenentatge per Reforç: DQN, PPO i SAC.
+        \item[--] Ajust d'hiperparàmetres per optimitzar el procés d'aprenentatge.
+        \item[--] Comparació dels tres models.
+    \end{itemize}
+
+    \item \textbf{Avaluació del rendiment de l'agent i comparació amb estratègies tradicionals}
     \begin{itemize}
-        \item[--] Mesura del rendiment de l’agent amb les mètriques Sharpe Ratio, Drawdown i retorn esperat.  
-        \item[--] Comparació del model DRL amb models basats únicament en indicadors tècnics (sense noticies).  
-        \item[--] Anàlisi de l'impacte de la integració de notícies en les decisions de l’agent, avaluant si aporta un avantatge competitiu.  
-    \end{itemize}  
-\end{itemize}  
+        \item[--] Mesura del rendiment de l'agent amb les mètriques Sharpe Ratio, Drawdown i retorn esperat.
+        \item[--] Comparació del model DRL amb models basats únicament en indicadors tècnics (sense noticies).
+        \item[--] Anàlisi de l'impacte de la integració de notícies en les decisions de l'agent, avaluant si aporta un avantatge competitiu.
+    \end{itemize}
+\end{itemize}
 
 \subsection{Sostenibilitat, diversitat i reptes ètics/socials}
 
-Aquest projecte es centra en la implementació d’un model algorítmic per a la inversió financera. Tot i que no es preveu un efecte directe en aspectes com la sostenibilitat, l’ètica o la diversitat, aquests factors poden estar presents de manera indirecta.
+Aquest projecte es centra en la implementació d'un model algorítmic per a la inversió financera. Tot i que no es preveu un efecte directe en aspectes com la sostenibilitat, l'ètica o la diversitat, aquests factors poden estar presents de manera indirecta.
 
 \begin{description}
-    \item[Sostenibilitat] L’entrenament de models d’aprenentatge profund requereix una quantitat significativa de recursos computacionals, això va directament relacionat amb un consum energètic. Aquest impacte es pot minimitzar optimitzant els entrenaments i reduint el nombre de simulacions innecessàries.
+    \item[Sostenibilitat] L'entrenament de models d'aprenentatge profund requereix una quantitat significativa de recursos computacionals, això va directament relacionat amb un consum energètic. Aquest impacte es pot minimitzar optimitzant els entrenaments i reduint el nombre de simulacions innecessàries.
     \item[Comportament ètic la responsabilitat social] Les dades utilitzades en el projecte són públiques, per la qual cosa no planteja problemes de privacitat o seguretat. No obstant això, aquests poden ser difícils d'interpretar, ja que sovint funcionen com una 'caixa negra' en la presa de decisions. Per tal de mitigar aquest fet, es posarà èmfasi en l'anàlisi dels resultats i en la comprensió del comportament de l'agent.
-    \item[Diversitat, gènere i drets humans] Aquest treball no té un impacte directe en aquests àmbits ja que se centra en la presa de decisions financeres basada en dades. No obstant això, cal tenir en compte que els models NLP poden heretar biaixos de les fonts d’informació utilitzades. Per evitar-ho, s'utilitzaran notícies de mitjans diversos per minimitzar qualsevol tendència ideològica que pugui afectar les decisions de l’agent.
+    \item[Diversitat, gènere i drets humans] Aquest treball no té un impacte directe en aquests àmbits ja que se centra en la presa de decisions financeres basada en dades. No obstant això, cal tenir en compte que els models NLP poden heretar biaixos de les fonts d'informació utilitzades. Per evitar-ho, s'utilitzaran notícies de mitjans diversos per minimitzar qualsevol tendència ideològica que pugui afectar les decisions de l'agent.
 \end{description}
 
 \subsection{Enfocament i metodologia}
 
-Aquest projecte segueix una estratègia de recerca experimental, centrada en el desenvolupament i avaluació d’un agent d’inversió basat en DRL. La metodologia es basa en la integració de dades estructurades, com preus i volums obtinguts mitjançant Yahoo Finance\cite{YahooFinance}, i dades no estructurades, com notícies extretes de The Guardian\cite{TheGuardian} i The New York Times\cite{NYTimes}. Aquestes notícies es processaran utilitzant tècniques avançades de processament de llenguatge natural, com TF-IDF per identificar paraules clau, topic modeling (LDA) per descobrir temes subjacents, i anàlisi de sentiments per capturar el to dels titulars.
+Aquest projecte segueix una estratègia de recerca experimental, centrada en el desenvolupament i avaluació d'un agent d'inversió basat en DRL. La metodologia es basa en la integració de dades estructurades, com preus i volums obtinguts mitjançant Yahoo Finance\cite{YahooFinance}, i dades no estructurades, com notícies extretes de The Guardian\cite{TheGuardian} i The New York Times\cite{NYTimes}. Aquestes notícies es processaran utilitzant tècniques avançades de processament de llenguatge natural, com TF-IDF per identificar paraules clau, topic modeling (LDA) per descobrir temes subjacents, i anàlisi de sentiments per capturar el to dels titulars.
 
-L’entorn de simulació es desenvoluparà amb OpenAI Gym, integrant tant les dades financeres com les característiques extretes de les notícies. Es definirà un sistema de recompenses amb l’objectiu de guiar l’agent cap a les millors decisions d'inversió. Per a la implementació dels models de DRL, s’utilitzaran tres algoritmes principals: DQN (Deep Q-Network), PPO (Proximal Policy Optimization) i SAC (Soft Actor-Critic). Durant aquesta fase, es realitzarà un ajust d’hiperparàmetres per optimitzar el rendiment dels models.
+L'entorn de simulació es desenvoluparà amb OpenAI Gym, integrant tant les dades financeres com les característiques extretes de les notícies. Es definirà un sistema de recompenses amb l'objectiu de guiar l'agent cap a les millors decisions d'inversió. Per a la implementació dels models de DRL, s'utilitzaran tres algoritmes principals: DQN (Deep Q-Network), PPO (Proximal Policy Optimization) i SAC (Soft Actor-Critic). Durant aquesta fase, es realitzarà un ajust d'hiperparàmetres per optimitzar el rendiment dels models.
 
-L’avaluació dels models es durà a terme mitjançant mètriques financeres com el Sharpe Ratio, el Drawdown i el retorn esperat. A més, es compararan els resultats amb estratègies tradicionals, per avaluar fins a quin punt la incorporació de notícies aporta un avantatge competitiu a l’agent. Tota la implementació es realitzarà en Python\cite{Python}, aprofitant llibreries especialitzades.
+L'avaluació dels models es durà a terme mitjançant mètriques financeres com el Sharpe Ratio, el Drawdown i el retorn esperat. A més, es compararan els resultats amb estratègies tradicionals, per avaluar fins a quin punt la incorporació de notícies aporta un avantatge competitiu a l'agent. Tota la implementació es realitzarà en Python\cite{Python}, aprofitant llibreries especialitzades.
 
 \subsection{Planificació}
 La planificació d'aquest treball s'ha fet acord a la planificació proposada al pla docent.
 \begin{itemize}
 
-    \item  \textbf{Investigació}: Aquesta primera etapa del projecte se centra en adquirir coneixements sobre el mercat borsari i en la recerca de fonts de dades accessibles que puguin aportar un valor significatiu al treball. 
-    
-    \item \textbf{Definició i introducció}: En aquesta fase, es defineix la planificació i els objectius del projecte, així com la justificació i rellevància d’aquests objectius dins del context de l’aprenentatge per reforç aplicat als mercats financers. 
-    
-    \item \textbf{Revisió de l'estat de l'art}: Cerca i anàlisi de la literatura i treballs previs relacionats amb l’aprenentatge per reforç aplicat a l'àmbit d'aquest treball.    
-    \item \textbf{Extracció de dades i creació del l'entorn}: Desenvolupament del codi necessari per a l'extracció i processament de les dades que s'utilitzaran durant el projecte. Això inclou l’obtenció de dades d’APIs i altres fonts, així com el seu tractament i modelatge per a integrar-les en l'entorn de simulació. Paral·lelament, es desenvoluparà l'entorn de simulació basat en OpenAI Gym, definint l'espai d'observació, les accions disponibles i la funció de recompensa del model.
-    
+    \item  \textbf{Investigació}: Aquesta primera etapa del projecte se centra en adquirir coneixements sobre el mercat borsari i en la recerca de fonts de dades accessibles que puguin aportar un valor significatiu al treball.
+
+    \item \textbf{Definició i introducció}: En aquesta fase, es defineix la planificació i els objectius del projecte, així com la justificació i rellevància d'aquests objectius dins del context de l'aprenentatge per reforç aplicat als mercats financers.
+
+    \item \textbf{Revisió de l'estat de l'art}: Cerca i anàlisi de la literatura i treballs previs relacionats amb l'aprenentatge per reforç aplicat a l'àmbit d'aquest treball.
+    \item \textbf{Extracció de dades i creació del l'entorn}: Desenvolupament del codi necessari per a l'extracció i processament de les dades que s'utilitzaran durant el projecte. Això inclou l'obtenció de dades d'APIs i altres fonts, així com el seu tractament i modelatge per a integrar-les en l'entorn de simulació. Paral·lelament, es desenvoluparà l'entorn de simulació basat en OpenAI Gym, definint l'espai d'observació, les accions disponibles i la funció de recompensa del model.
+
     \item \textbf{Implementació i validació}: Implementació dels algoritmes de DRL que s'utilitzaran i la seva posterior validació. Es configuraran els models seleccionats, i s'entrenaran dins l'entorn de simulació. La validació es durà a terme mitjançant diferents mètriques d'avaluació.
-    
+
     \item \textbf{Redacció de la memòria}: Elaboració del document final del treball i redacció de les conclusions.
-    
+
 \end{itemize}
 
 \begin{figure}[H]
@@ -189,9 +189,9 @@ La planificació d'aquest treball s'ha fet acord a la planificació proposada al
 
 \subsection{Resum dels productes del projecte}
 
-Els resultats d’aquest projecte inclouran el desenvolupament d’un agent d’inversió basat en Aprenentatge per Reforç Profund capaç d’integrar dades financeres i notícies processades mitjançant tècniques de NLP com TF-IDF, topic modeling (LDA) i anàlisi de sentiments. L’agent s’entrenarà en un entorn de simulació desenvolupat amb OpenAI Gym, on podrà analitzar dades de mercat i informació qualitativa per optimitzar la seva presa de decisions.
+Els resultats d'aquest projecte inclouran el desenvolupament d'un agent d'inversió basat en Aprenentatge per Reforç Profund capaç d'integrar dades financeres i notícies processades mitjançant tècniques de NLP com TF-IDF, topic modeling (LDA) i anàlisi de sentiments. L'agent s'entrenarà en un entorn de simulació desenvolupat amb OpenAI Gym, on podrà analitzar dades de mercat i informació qualitativa per optimitzar la seva presa de decisions.
 
-A més, es crearà una pipeline de processament de notícies per obtenir, netejar i transformar titulars de mitjans com The Guardian i The New York Times en una representació numèrica adequada per al model. Finalment, es durà a terme una avaluació detallada dels algorismes DQN, PPO i SAC mitjançant mètriques financeres com el Sharpe Ratio, Drawdown i retorn esperat, amb l’objectiu d’analitzar l’impacte de la integració de notícies en la presa de decisions.
+A més, es crearà una pipeline de processament de notícies per obtenir, netejar i transformar titulars de mitjans com The Guardian i The New York Times en una representació numèrica adequada per al model. Finalment, es durà a terme una avaluació detallada dels algorismes DQN, PPO i SAC mitjançant mètriques financeres com el Sharpe Ratio, Drawdown i retorn esperat, amb l'objectiu d'analitzar l'impacte de la integració de notícies en la presa de decisions.
 
 % \subsection{Breu descripció de la resta de capítols de l'informe.}
 % TBD
@@ -207,7 +207,7 @@ A més, s'aborda la integració de dades qualitatives, com són en aquest cas le
 
 Els mercats financers són un dels motors principals de l'economia global, ja que permeten la compra i venda d'actius com ara accions, bons, productes derivats o divises \cite{InvestopediaFinance}. Aquesta activitat permet a empreses i governs obtenir finançament, mentre que els inversors poden buscar rendiments ajustats al risc. Històricament, la presa de decisions en aquests mercats es basava en l'anàlisi fonamental, que se centra en l'estudi de factors macroeconòmics i de la situació financera de les empreses, i en l'anàlisi tècnic, que examina patrons de preu i volum al llarg del temps \cite{TradersBook}.
 
-Amb l'evolució de la computació i la disponibilitat de bases de dades massives, les eines estadístiques i de machine learning han adquirit un pes rellevant en aquest àmbit. Això ha propiciat l'aparició del trading algorísmic, que consisteix en la implementació d'estratègies de compra i venda mitjançant algoritmes automàtics. 
+Amb l'evolució de la computació i la disponibilitat de bases de dades massives, les eines estadístiques i de machine learning han adquirit un pes rellevant en aquest àmbit. Això ha propiciat l'aparició del trading algorísmic, que consisteix en la implementació d'estratègies de compra i venda mitjançant algoritmes automàtics.
 
 Actualment, el trading el duen a terme tant inversors institucionals, com ara bancs d'inversió o fons d'alt risc, com inversors minoristes que accedeixen a plataformes en línia. Tot i que els objectius i les estratègies poden variar (des d'operacions de molt curt termini fins a enfocaments més orientats a llarg termini), l'element comú és la cerca del màxim retorn possible dins uns paràmetres de risc coneguts. En aquest context, l'aprenentatge automàtic i, de forma més recent, l'aprenentatge per reforç profund han sorgit com a eines per crear agents capaços d'adaptar-se a l'evolució dels mercats i maximitzar els resultats de les inversions.
 
@@ -330,35 +330,35 @@ Dins d'aquest marc general, en el DRL s'han proposat diversos mètodes que resol
 El mètode Deep Q-Network (DQN) és un dels pilars fonamentals de l'aprenentatge per reforç profund (DRL), i representa l'aplicació directa de xarxes neuronals profundes per aproximar la funció d'acció-valor $Q(s, a)$ pròpia del mètode Q-learning. La seva introducció per DeepMind \cite{MnihNature2015} va marcar un abans i un després, aconseguint un rendiment superior al de humans en diversos jocs d'Atari \cite{M9}.
 
 \paragraph{Q-learning revisat:}
-El Q-learning és un algorisme de control off-policy que permet aprendre una política òptima mitjançant la maximització del valor esperat del retorn acumulat. La funció de valor $Q$ s’actualitza iterativament a partir de l’experiència de l’agent, segons la següent equació:
+El Q-learning és un algorisme de control off-policy que permet aprendre una política òptima mitjançant la maximització del valor esperat del retorn acumulat. La funció de valor $Q$ s'actualitza iterativament a partir de l'experiència de l'agent, segons la següent equació:
 
 \begin{equation}
 Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha \left[ r_{t+1} + \gamma \max_{a'} Q(s_{t+1}, a') - Q(s_t, a_t) \right]
 \end{equation}
 
-En aquest cas, $\alpha$ representa la taxa d’aprenentatge, $r_{t+1}$ és la recompensa obtinguda després de realitzar l’acció $a_t$ en l’estat $s_t$, i $\gamma$ és el factor de descompte que pondera les recompenses futures. L’objectiu és refinar progressivament l’estimació de $Q(s,a)$ per reflectir millor els guanys a llarg termini que pot aconseguir l’agent seguint una política determinada.
+En aquest cas, $\alpha$ representa la taxa d'aprenentatge, $r_{t+1}$ és la recompensa obtinguda després de realitzar l'acció $a_t$ en l'estat $s_t$, i $\gamma$ és el factor de descompte que pondera les recompenses futures. L'objectiu és refinar progressivament l'estimació de $Q(s,a)$ per reflectir millor els guanys a llarg termini que pot aconseguir l'agent seguint una política determinada.
 
-Tot i la seva eficàcia en entorns simples, Q-learning té moltes limitacions quan s’aplica a espais d’estats molt grans o continus. En aquests casos, l'agent no pot utilitzar una taula explícita $Q(s,a)$ a causa de les limitacions de memòria i de l'eficiència computacional. Per sol·lucionar això, va sorgir l’algorisme Deep Q-Network (DQN), que substitueix la taula Q per una xarxa neuronal que aproxima la funció $Q(s,a)$ a través de paràmetres ajustables $\theta$, de manera que $Q(s,a; \theta) \approx Q^*(s,a)$.
+Tot i la seva eficàcia en entorns simples, Q-learning té moltes limitacions quan s'aplica a espais d'estats molt grans o continus. En aquests casos, l'agent no pot utilitzar una taula explícita $Q(s,a)$ a causa de les limitacions de memòria i de l'eficiència computacional. Per sol·lucionar això, va sorgir l'algorisme Deep Q-Network (DQN), que substitueix la taula Q per una xarxa neuronal que aproxima la funció $Q(s,a)$ a través de paràmetres ajustables $\theta$, de manera que $Q(s,a; \theta) \approx Q^*(s,a)$.
 
 
 \paragraph{Arquitectura DQN:}
 
-L’arquitectura d’una DQN es basa en una xarxa neuronal profunda, que pot modificar-se segons la naturalesa de les dades d’entrada. Quan es treballa amb imatges, per exemple, és habitual l’ús de xarxes convolucionals (CNN); en altres contextos, poden emprar-se arquitectures totalment connectades o específiques del domini. La sortida de la xarxa és un vector que conté els valors Q estimats per a cada acció possible a partir d’un estat donat.
+L'arquitectura d'una DQN es basa en una xarxa neuronal profunda, que pot modificar-se segons la naturalesa de les dades d'entrada. Quan es treballa amb imatges, per exemple, és habitual l'ús de xarxes convolucionals (CNN); en altres contextos, poden emprar-se arquitectures totalment connectades o específiques del domini. La sortida de la xarxa és un vector que conté els valors Q estimats per a cada acció possible a partir d'un estat donat.
 
 
 \paragraph{Funció de pèrdua i entrenament:}
 
-L’aprenentatge de la DQN es basa en la minimització de la diferència entre la predicció de la xarxa i un valor objectiu $y_t$, derivat de la fórmula de Bellman. La funció de pèrdua que s’utilitza habitualment és:
+L'aprenentatge de la DQN es basa en la minimització de la diferència entre la predicció de la xarxa i un valor objectiu $y_t$, derivat de la fórmula de Bellman. La funció de pèrdua que s'utilitza habitualment és:
 
 \begin{equation}
 \mathcal{L}(\theta) = \mathbb{E}_{(s,a,r,s') \sim \mathcal{D}} \left[ \left( y_t - Q(s, a; \theta) \right)^2 \right]
 \end{equation}
 
-on el valor objectiu es calcula com $y_t = r + \gamma \max_{a'} Q(s', a'; \theta^-)$, i $\theta^-$ representa els pesos d’una còpia fixa de la xarxa principal (target network) que s’actualitza periòdicament.
+on el valor objectiu es calcula com $y_t = r + \gamma \max_{a'} Q(s', a'; \theta^-)$, i $\theta^-$ representa els pesos d'una còpia fixa de la xarxa principal (target network) que s'actualitza periòdicament.
 
 
 \paragraph{Tècniques per estabilitzar DQN:}
-Per garantir un entrenament estable i eficient, DQN implementa diverses estratègies. La primera és l’ús d’una target network, una rèplica de la xarxa principal amb pesos congelats durant un cert nombre d’iteracions, que s'utilitza per calcular els valors objectiu $y_t$ de manera més robusta. La segona és l’\textit{experience replay}, que consisteix a emmagatzemar les transicions $(s,a,r,s')$ en una memòria i mostrejar-les aleatòriament durant l’entrenament. Això trenca la correlació temporal entre les mostres i millora l’eficiència del procés d’aprenentatge. Finalment, per garantir un equilibri entre exploració i explotació, s’adopta una política $\varepsilon$-greedy, en què l’agent selecciona accions aleatòries amb una probabilitat $\varepsilon$, afavorint l'exploració durant l'entrenament \cite{M9}\cite{MnihNature2015}.
+Per garantir un entrenament estable i eficient, DQN implementa diverses estratègies. La primera és l'ús d'una target network, una rèplica de la xarxa principal amb pesos congelats durant un cert nombre d'iteracions, que s'utilitza per calcular els valors objectiu $y_t$ de manera més robusta. La segona és l'\textit{experience replay}, que consisteix a emmagatzemar les transicions $(s,a,r,s')$ en una memòria i mostrejar-les aleatòriament durant l'entrenament. Això trenca la correlació temporal entre les mostres i millora l'eficiència del procés d'aprenentatge. Finalment, per garantir un equilibri entre exploració i explotació, s'adopta una política $\varepsilon$-greedy, en què l'agent selecciona accions aleatòries amb una probabilitat $\varepsilon$, afavorint l'exploració durant l'entrenament \cite{M9}\cite{MnihNature2015}.
 
 
 \subsubsection{Proximal Policy Optimization (PPO)}
@@ -374,13 +374,13 @@ Es tracta d'un mètode basat en gradient de política (PG). Aquests mètodes act
 
 on $J(\theta)$ és una estimació del retorn esperat. Tanmateix, actualitzacions massa grans poden trencar la política i provocar divergències. PPO simplifica aquesta idea limitant els canvis de política mitjançant una funció de pèrdua acotada.
 
-L’objectiu de PPO és maximitzar el \textit{clipped surrogate objective}, que segueix la següent expressió:
+L'objectiu de PPO és maximitzar el \textit{clipped surrogate objective}, que segueix la següent expressió:
 
 \begin{equation}
 \mathcal{L}^{\text{CLIP}}(\theta) = \mathbb{E}_t \left[ \min \left( r_t(\theta) \hat{A}_t, \, \text{clip}(r_t(\theta), 1 - \epsilon, 1 + \epsilon) \hat{A}_t \right) \right]
 \end{equation}
 
-on $r_t(\theta) = \frac{\pi_\theta(a_t | s_t)}{\pi_{\theta_{\text{old}}}(a_t | s_t)}$ és el quocient entre la nova política i la política antiga, i $\hat{A}_t$ és l’avantatge estimat en el temps $t$, generalment calculat com $\hat{A}_t = Q(s_t,a_t) - V(s_t)$. El paràmetre $\epsilon$, típicament entre 0.1 i 0.3, controla la tolerància als canvis. Si $r_t$ surt dels límits establerts, l’actualització queda truncada i no rep recompensa addicional, evitant així desviacions molt brusques.
+on $r_t(\theta) = \frac{\pi_\theta(a_t | s_t)}{\pi_{\theta_{\text{old}}}(a_t | s_t)}$ és el quocient entre la nova política i la política antiga, i $\hat{A}_t$ és l'avantatge estimat en el temps $t$, generalment calculat com $\hat{A}_t = Q(s_t,a_t) - V(s_t)$. El paràmetre $\epsilon$, típicament entre 0.1 i 0.3, controla la tolerància als canvis. Si $r_t$ surt dels límits establerts, l'actualització queda truncada i no rep recompensa addicional, evitant així desviacions molt brusques.
 
 \paragraph{Estimació de l'avantatge:}
 Per reduir la variància en l'estimació de l'avantatge s'utilitza sovint el mètode \textbf{GAE (Generalized Advantage Estimation)}:
@@ -389,14 +389,14 @@ Per reduir la variància en l'estimació de l'avantatge s'utilitza sovint el mè
 \hat{A}_t = \sum_{l=0}^{\infty} (\gamma \lambda)^l \delta_{t+l}
 \end{equation}
 
-on $\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)$ i $\lambda$ és un hiperparàmetre que regula el compromís entre biaix i variància. Aquesta estimació suavitza l’avantatge i contribueix a millorar la qualitat dels gradients.
+on $\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)$ i $\lambda$ és un hiperparàmetre que regula el compromís entre biaix i variància. Aquesta estimació suavitza l'avantatge i contribueix a millorar la qualitat dels gradients.
 
 
-El funcionament complet de PPO es pot resumir en les següents etapes, repetides a cada iteració d’entrenament:
+El funcionament complet de PPO es pot resumir en les següents etapes, repetides a cada iteració d'entrenament:
 \begin{enumerate}
   \item Es recullen trajectòries executades per la política actual $\pi_\theta$.
-  \item Es calculen els valors de retorn, la funció de valor $V(s)$ i l’avantatge $\hat{A}_t$.
-  \item Es realitza l'entrenament durant diverses èpoques minimitzant $\mathcal{L}^{\text{CLIP}}(\theta)$, habitualment amb l’optimitzador Adam.
+  \item Es calculen els valors de retorn, la funció de valor $V(s)$ i l'avantatge $\hat{A}_t$.
+  \item Es realitza l'entrenament durant diverses èpoques minimitzant $\mathcal{L}^{\text{CLIP}}(\theta)$, habitualment amb l'optimitzador Adam.
   \item Finalment, es copia la política actual per actualitzar la política antiga: $\theta_{\text{old}} \leftarrow \theta$.
 \end{enumerate}
 
@@ -405,7 +405,7 @@ El funcionament complet de PPO es pot resumir en les següents etapes, repetides
 
 El Soft Actor-Critic (SAC) és un dels algorismes d'aprenentatge per reforç profund més eficients dissenyat per operar en entorns amb espais d'accions continus \cite{Haarnoja2018}. Forma part dels mètodes \textit{actor-crític off-policy}, però amb la novetat que a banda d'optimitzar el retorn esperat, també maximitza l'entropia de la política, afavorint polítiques més deterministes i exploratòries \cite{M11}.
 
-A diferència d'altres enfocaments que busquen únicament maximitzar la recompensa, el SAC té dos objectius. D'una banda, vol obtenir un retorn acumulat elevat; de l’altra, manté l’entropia de la política elevada per evitar una convergència prematura cap a solucions deterministes. Aquest objectiu es tradueix en la següent expressió:
+A diferència d'altres enfocaments que busquen únicament maximitzar la recompensa, el SAC té dos objectius. D'una banda, vol obtenir un retorn acumulat elevat; de l'altra, manté l'entropia de la política elevada per evitar una convergència prematura cap a solucions deterministes. Aquest objectiu es tradueix en la següent expressió:
 
 En lloc de maximitzar només el retorn esperat acumulat, SAC maximitza l'objectiu següent:
 
@@ -413,32 +413,32 @@ En lloc de maximitzar només el retorn esperat acumulat, SAC maximitza l'objecti
 J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[ \sum_t r(s_t, a_t) + \alpha \mathcal{H}(\pi(\cdot|s_t)) \right]
 \end{equation}
 
-Aquí, $\mathcal{H}$ és l’entropia de la política, i $\alpha$ és un hiperparàmetre que controla el pes assignat al terme d'exploració. Com més alt sigui $\alpha$, més probabilitat tindrà l’agent de mantenir accions aleatòries, evitant una convergència massa ràpida.
+Aquí, $\mathcal{H}$ és l'entropia de la política, i $\alpha$ és un hiperparàmetre que controla el pes assignat al terme d'exploració. Com més alt sigui $\alpha$, més probabilitat tindrà l'agent de mantenir accions aleatòries, evitant una convergència massa ràpida.
 
 \paragraph{Arquitectura del SAC:}
 
-L’arquitectura del SAC integra diversos components que treballen conjuntament. El primer és l’actor $\pi_\phi(a|s)$, una política estocàstica que genera accions a partir d’una distribució probabilística —habitualment una gaussiana parametritzada. El segon són dos crítics, $Q_{\theta_1}(s,a)$ i $Q_{\theta_2}(s,a)$, que proporcionen estimacions de valor independents. Aquest disseny amb doble crític busca reduir el biaix per sobreaprenentatge, prenent el mínim dels dos valors en les actualitzacions. Finalment, també s’incorporen versions retardades dels crítics, conegudes com a \textit{target critics}, que s’usen per millorar l’estabilitat del procés d'entrenament.
+L'arquitectura del SAC integra diversos components que treballen conjuntament. El primer és l'actor $\pi_\phi(a|s)$, una política estocàstica que genera accions a partir d'una distribució probabilística —habitualment una gaussiana parametritzada. El segon són dos crítics, $Q_{\theta_1}(s,a)$ i $Q_{\theta_2}(s,a)$, que proporcionen estimacions de valor independents. Aquest disseny amb doble crític busca reduir el biaix per sobreaprenentatge, prenent el mínim dels dos valors en les actualitzacions. Finalment, també s'incorporen versions retardades dels crítics, conegudes com a \textit{target critics}, que s'usen per millorar l'estabilitat del procés d'entrenament.
 
 
-L’entrenament del SAC gira al voltant de tres funcions d’objectiu diferenciades. En primer lloc, els crítics s’actualitzen per mitjà de l’error de temporal difference (TD), fent servir una estimació suau del retorn que inclou el terme d'entropia de la política:
+L'entrenament del SAC gira al voltant de tres funcions d'objectiu diferenciades. En primer lloc, els crítics s'actualitzen per mitjà de l'error de temporal difference (TD), fent servir una estimació suau del retorn que inclou el terme d'entropia de la política:
   \begin{equation}
   y(r,s') = r + \gamma \left( \min_{i=1,2} Q_{\theta'_i}(s', a') - \alpha \log \pi_\phi(a'|s') \right)
   \end{equation}
 
-  En segon lloc, l’actor es millora mitjançant la minimització d’una pèrdua que combina el valor esperat negatiu amb el terme d’entropia, afavorint aquelles accions que siguin valuoses i exploratòries alhora:
+  En segon lloc, l'actor es millora mitjançant la minimització d'una pèrdua que combina el valor esperat negatiu amb el terme d'entropia, afavorint aquelles accions que siguin valuoses i exploratòries alhora:
 
   \begin{equation}
   \mathcal{L}_{\text{actor}} = \mathbb{E}_{s_t \sim \mathcal{D}} \left[ \alpha \log \pi_\phi(a_t|s_t) - Q_{\theta}(s_t, a_t) \right]
   \end{equation}
 
-  Finalment, l’hiperparàmetre $\alpha$, que controla el pes del terme d'entropia, pot ajustar-se automàticament durant l’entrenament. Aquesta adaptació es fa mitjançant l’optimització d’una tercera funció de pèrdua:
+  Finalment, l'hiperparàmetre $\alpha$, que controla el pes del terme d'entropia, pot ajustar-se automàticament durant l'entrenament. Aquesta adaptació es fa mitjançant l'optimització d'una tercera funció de pèrdua:
 
   \begin{equation}
   \mathcal{L}(\alpha) = \mathbb{E}_{a_t \sim \pi} \left[ -\alpha \log \pi(a_t|s_t) - \alpha \mathcal{H}_\text{target} \right]
   \end{equation}
 
 
-Gràcies a aquests elements, SAC és molt robust i eficient. El seu enfocament off-policy permet aprofitar dades acumulades en experiències passades, fet que incrementa l’eficiència. Alhora, la regularització mitjançant entropia manté una exploració activa i sostinguda durant l'entrenament. L’ús de dues xarxes Q redueix significativament el biaix en les estimacions de valor, i l’ajust automàtic del paràmetre $\alpha$ facilita un equilibri dinàmic entre exploració i explotació \cite{Haarnoja2018}.
+Gràcies a aquests elements, SAC és molt robust i eficient. El seu enfocament off-policy permet aprofitar dades acumulades en experiències passades, fet que incrementa l'eficiència. Alhora, la regularització mitjançant entropia manté una exploració activa i sostinguda durant l'entrenament. L'ús de dues xarxes Q redueix significativament el biaix en les estimacions de valor, i l'ajust automàtic del paràmetre $\alpha$ facilita un equilibri dinàmic entre exploració i explotació \cite{Haarnoja2018}.
 
 \vspace{2em}
 
@@ -523,17 +523,46 @@ A més, s'ha observat que la incorporació d'informació provinent de xarxes soc
 
 
 
+\chapter{Implementació}
+\subsection{Estructura del projecte}
 
 
 
+\subsection{Construcció de les dades}
+
+\subsubsection{Obtenció de les notícies}
+
+\subsubsection{Selecció dels actius}
+
+\subsubsection{Indicadors tècnics}
+
+
+\subsection{Disseny de l'entorn}
+
+
+\subsubsection{Espai d'observables}
+
+
+\subsubsection{Espai d'accions}
+
+
+\subsubsection{Construcció de la recompensa}
+
+
+
+\subsection{Construcció dels algoritmes}
+\subsubsection{Implementació dels models}
+
+
+\subsection{Avaluació del model}
 
 % \chapter{Glossari}
 % Definició dels termes y acrònims més rellevants utilitzats en aquest informe.
 % \begin{itemize}
 %     \item API (Application Programming Interface): interfície que especifica com diferents components de programes informàtics poden interactuar.
-%     \item Drawdown: Mesura financera que representa la pèrdua màxima des d'un pic fins a un mínim abans d’una recuperació en el rendiment d'una inversió.
+%     \item Drawdown: Mesura financera que representa la pèrdua màxima des d'un pic fins a un mínim abans d'una recuperació en el rendiment d'una inversió.
 %     \item DQN (Deep Q-Network): Algorisme de DRL que utilitza xarxes neuronals per aproximar la funció de valor Q.
-%     \item DRL (Deep Reinforcement Learning): Aprenentatge per reforç profund, una branca del Machine Learning que combina l’Aprenentatge per Reforç (RL) amb xarxes neuronals profundes.
+%     \item DRL (Deep Reinforcement Learning): Aprenentatge per reforç profund, una branca del Machine Learning que combina l'Aprenentatge per Reforç (RL) amb xarxes neuronals profundes.
 %     \item Gym (OpenAI Gym): Entorn de simulació utilitzat per al desenvolupament i avaluació d'algoritmes d'Aprenentatge per Reforç. 
 %     \item LDA (Latent Dirichlet Allocation): Model probabilístic de generació de temes utilitzat en NLP per trobar termes equivalents.
 %     \item NLP (Natural Language Processing): Camp de la Intel·ligència Artificial que estudia la interacció entre ordinadors i llenguatge humà.
