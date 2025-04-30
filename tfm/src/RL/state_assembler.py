@@ -47,8 +47,9 @@ class StateAssembler:
         self.fit_scaler(market_df)
         market_norm = self.transform_market(market_df)
 
-        combined_df = pd.merge(market_norm, news_df, on="date", how="left")
-        combined_df = combined_df.sort_values(by="date").reset_index(drop=True)
-
+        if news_df is not None:
+            combined_df = pd.merge(market_norm, news_df, on="date", how="left")
+        else:
+            combined_df = market_norm
         logger.success(f"State assembled: {combined_df.shape[0]} rows, {combined_df.shape[1]} features.")
-        return combined_df
+        return combined_df.sort_values(by="date").reset_index(drop=True)
