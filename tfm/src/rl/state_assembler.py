@@ -40,7 +40,7 @@ class StateAssembler:
 
     def assemble_state(self, market_df: pd.DataFrame, news_df: pd.DataFrame) -> pd.DataFrame:
         """
-        Normalize technical indicators and merge with NLP features on date.
+        Normalize technical indicators and merge with news features on date.
         """
         logger.info("Merging normalized technical indicators with news features...")
 

@@ -9,7 +9,7 @@ from textblob import TextBlob
 
 from transformers import pipeline
 
-from tfm.src.NLP.text_processor import TextProcessor
+from tfm.src.news.text_processor import TextProcessor
 
 class NLProcessor:
     def __init__(
@@ -44,7 +44,7 @@ class NLProcessor:
                 self.use_finbert = False
 
     def train(self, df: pd.DataFrame):
-        logger.info("Training NLP models...")
+        logger.info("Training news models...")
         df = df[df["date"] < self.cutoff_date]
 
         logger.info(f"Training on {len(df)} documents prior to {self.cutoff_date.date()}")
@@ -53,7 +53,7 @@ class NLProcessor:
 
         self.train_word2vec(token_lists)
         self.train_lda(raw_texts)
-        logger.success("Finished training NLP models.")
+        logger.success("Finished training news models.")
 
     def train_word2vec(self, texts: list[list[str]]):
         logger.debug("Training Word2Vec...")
@@ -118,7 +118,7 @@ class NLProcessor:
             return 0.0
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame: # TODO eliminar funció
-        logger.info(f"Transforming {len(df)} documents into NLP feature vectors...")
+        logger.info(f"Transforming {len(df)} documents into news feature vectors...")
 
         df = df.reset_index(drop=True)
         token_lists = [text.split() for text in df["clean_text"]]
@@ -168,13 +168,13 @@ class NLProcessor:
         Processes the most relevant articles from a single day by:
         - Selecting top-N articles by absolute sentiment
         - Concatenating their text
-        - Computing NLP features (Word2Vec, LDA, sentiment)
+        - Computing news features (Word2Vec, LDA, sentiment)
 
         Args:
             df: DataFrame with all articles for a given date.
 
         Returns:
-            DataFrame with a single row: NLP features for that day.
+            DataFrame with a single row: news features for that day.
         """
         logger.info(f"Transforming {len(df)} documents → top {self.top_n} most relevant")
 
@@ -197,19 +197,19 @@ class NLProcessor:
             **{f"lda_{i}": lda_vec[i] for i in range(len(lda_vec))}
         }
 
-        logger.success("Day-level NLP transformation completed.")
+        logger.success("Day-level news transformation completed.")
         return pd.DataFrame([data])
 
     def _transform_day_mean_of_top_articles(self, df: pd.DataFrame) -> pd.DataFrame:
         """
-        Selects top-N articles by absolute sentiment, computes NLP vectors for each,
+        Selects top-N articles by absolute sentiment, computes news vectors for each,
         and returns the mean of all vectors.
 
         Args:
             df: DataFrame of news from one day.
 
         Returns:
-            DataFrame with a single row of averaged NLP features.
+            DataFrame with a single row of averaged news features.
         """
         df = df.copy()
         df["sentiment"] = df["full_text"].apply(self.get_sentiment_score)
@@ -246,7 +246,7 @@ class NLProcessor:
     ) -> pd.DataFrame:
         """
         Transforms a news dataset grouped by date, using one of two strategies:
-        - "concat": top-N articles are concatenated and a single NLP vector is computed.
+        - "concat": top-N articles are concatenated and a single news vector is computed.
         - "mean": top-N articles are processed individually and their vectors averaged.
 
         Args:
@@ -255,12 +255,12 @@ class NLProcessor:
             market: us or eu.
 
         Returns:
-            DataFrame with one row per day and NLP vectors.
+            DataFrame with one row per day and news vectors.
         """
         assert strategy in ["concat", "mean"], "strategy must be 'concat' or 'mean'"
         assert market in ["us", "eu"], "market must be 'us' or 'eu'"
 
-        logger.info(f"Starting NLP transformation for market: {market} using strategy: {strategy}")
+        logger.info(f"Starting news transformation for market: {market} using strategy: {strategy}")
         results = []
 
         for date, group in df.groupby(f"market_date_{market}"):
@@ -283,7 +283,7 @@ class NLProcessor:
 
 
     def save(self, path: str):
-        logger.info(f"Saving NLP models to {path}")
+        logger.info(f"Saving news models to {path}")
         if self.word2vec_model:
             self.word2vec_model.save(f"{path}/word2vec.model")
         if self.lda_model:
@@ -293,7 +293,7 @@ class NLProcessor:
         logger.success("Models saved successfully.")
 
     def load(self, path: str):
-        logger.info(f"Loading NLP models from {path}")
+        logger.info(f"Loading news models from {path}")
         self.word2vec_model = Word2Vec.load(f"{path}/word2vec.model")
         self.lda_model = joblib.load(f"{path}/lda_model.pkl")
         self.vectorizer = joblib.load(f"{path}/vectorizer.pkl")

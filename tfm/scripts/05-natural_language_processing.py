@@ -1,9 +1,9 @@
-"""Script to generate NLP-based features for DRL input."""
+"""Script to generate news-based features for DRL input."""
 
 import pandas as pd
 from pathlib import Path
 from tfm.src.config.settings import PATH_DATA_PROCESSED
-from tfm.src.NLP.nlp_processor import NLProcessor
+from tfm.src.news.nlp_processor import NLProcessor
 
 # Params
 CUTOFF_DATE = "2024-01-01"
@@ -38,12 +38,12 @@ MODEL_DIR.mkdir(parents=True, exist_ok=True)
 # Load or train models
 try:
     nlp.load(str(MODEL_DIR))
-    print("✅ NLP models loaded from disk.")
+    print("✅ news models loaded from disk.")
 except Exception as e:
     print("⚠️ Could not load models, training from scratch...")
     nlp.train(df)
     nlp.save(str(MODEL_DIR))
-    print("✅ NLP models trained and saved.")
+    print("✅ news models trained and saved.")
 
 # Transform all data
 df_vectors = nlp.transform_dataset_by_day(df, strategy=STRATEGY, market=MARKET)

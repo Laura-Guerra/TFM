@@ -1,7 +1,7 @@
-"""Script to assemble the state features for the RL agent."""
+"""Script to assemble the state features for the rl agent."""
 import pandas as pd
 
-from tfm.src.RL.state_assembler import StateAssembler
+from tfm.src.rl.state_assembler import StateAssembler
 from tfm.src.config.settings import PATH_DATA_PROCESSED
 
 # %% Load data

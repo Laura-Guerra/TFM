@@ -2,7 +2,7 @@
 import time
 from datetime import datetime
 
-from tfm.src.NLP.extraction import NewsExtractor
+from tfm.src.news.news_extraction import NewsExtractor
 
 
 # %%

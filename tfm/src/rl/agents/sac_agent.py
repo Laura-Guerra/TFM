@@ -4,7 +4,7 @@ import numpy as np
 import optuna
 from pathlib import Path
 from stable_baselines3 import SAC
-from tfm.src.RL.agents.base_agent import BaseAgent
+from tfm.src.rl.agents.base_agent import BaseAgent
 
 
 class SACAgent(BaseAgent):

@@ -1,11 +1,11 @@
-"""Script to process cleaned news and prepare NLP-ready text."""
+"""Script to process cleaned news and prepare news-ready text."""
 
 import pandas as pd
 from loguru import logger
 
 from tfm.src.config.settings import PATH_DATA_PROCESSED
-from tfm.src.NLP.news_processor import NewsProcessor
-from tfm.src.NLP.text_processor import TextProcessor
+from tfm.src.news.news_processor import NewsProcessor
+from tfm.src.news.text_processor import TextProcessor
 from tfm.src.utils.generate_new_market_date import compute_effective_market_date
 
 # %% Load data
@@ -27,11 +27,11 @@ news_processor = NewsProcessor(
 )
 news_with_text = news_processor.unify_text(news_df, keywords_df)
 
-# %% Clean text for NLP
+# %% Clean text for news
 text_processor = TextProcessor(lang="english", use_lemmatizer=True)
 news_final = text_processor.apply(news_with_text, text_column="full_text")
 
 # %% Save output
 news_final.to_csv(PATH_DATA_PROCESSED / "articles_final_nlp.csv", index=False)
 
-logger.info("✅ NLP-ready news data saved.")
+logger.info("✅ news-ready news data saved.")
