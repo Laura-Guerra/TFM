@@ -117,33 +117,6 @@ class NLProcessor:
             logger.warning(f"Sentiment analysis failed: {e}")
             return 0.0
 
-    def transform(self, df: pd.DataFrame) -> pd.DataFrame: # TODO eliminar funció
-        logger.info(f"Transforming {len(df)} documents into news feature vectors...")
-
-        df = df.reset_index(drop=True)
-        token_lists = [text.split() for text in df["clean_text"]]
-
-        # Word2Vec
-        doc_vectors = np.array([self.get_doc_vector(toks) for toks in token_lists])
-        w2v_df = pd.DataFrame(doc_vectors, columns=[f"w2v_{i}" for i in range(self.word2vec_dim)])
-
-        # LDA
-        topic_vectors = np.array([self.get_topic_vector(txt) for txt in df["clean_text"]])
-        lda_df = pd.DataFrame(topic_vectors, columns=[f"lda_{i}" for i in range(self.lda_topics)])
-
-        # Sentiment
-        sentiment_scores = df["full_text"].apply(self.get_sentiment_score)
-        sentiment_scores.name = "sentiment"
-
-        # Selecció de les columnes base
-        base_df = df[["date", "full_text"]].copy()
-
-        # Concatenar tot
-        final_df = pd.concat([base_df, w2v_df, lda_df, sentiment_scores], axis=1)
-
-        logger.success("Transformation completed.")
-        return final_df
-
     def _get_top_n_articles_as_text(self, df: pd.DataFrame) -> str:
         """
         Selects the top-N most sentimentally extreme articles from a DataFrame
@@ -314,23 +287,4 @@ class NLProcessor:
             top_words = [words[i] for i in topic.argsort()[:-top_n - 1:-1]]
             logger.info(f"🟢 Topic {idx}: {' | '.join(top_words)}")
 
-    def get_topic_keywords(self, top_n: int = 10) -> dict[int, list[str]]:
-        """
-        Return a dictionary with topic index and top N keywords per topic.
-
-        Returns:
-            dict: {topic_index: [word1, word2, ...]}
-        """
-        if not self.lda_model or not self.vectorizer:
-            logger.warning("LDA model or vectorizer not available.")
-            return {}
-
-        words = self.vectorizer.get_feature_names_out()
-        topic_keywords = {}
-
-        for idx, topic in enumerate(self.lda_model.components_):
-            top_words = [words[i] for i in topic.argsort()[:-top_n - 1:-1]]
-            topic_keywords[idx] = top_words
-
-        return topic_keywords
 
