@@ -1,11 +1,11 @@
-import gym
+import gymnasium
 import numpy as np
 import pandas as pd
-from gym import spaces
+from gymnasium import spaces
 from loguru import logger
 
 
-class StockEnvironment(gym.Env):
+class StockEnvironment(gymnasium.Env):
     metadata = {"render.modes": ["human"]}
 
     def __init__(
@@ -48,13 +48,14 @@ class StockEnvironment(gym.Env):
 
         self.reset()
 
-    def reset(self):
-        self.current_step = 1  # Start at 1 to have a valid d-1
+    def reset(self, seed=None, options=None):
+        self.current_step = 1
         self.balance = self.initial_balance
         self.shares_held = 0.0
         self.net_worth = self.initial_balance
         self.previous_net_worth = self.initial_balance
-        return self._get_obs()
+
+        return self._get_obs(), {}
 
     def _get_obs(self):
         row_d_minus_1 = self.df.iloc[self.current_step - 1]
@@ -67,6 +68,10 @@ class StockEnvironment(gym.Env):
         return obs.astype(np.float32)
 
     def step(self, action):
+        if isinstance(action, np.ndarray):
+            action = action.item()  # serveix tant per shape () com (1,)
+        elif isinstance(action, (list, tuple)):
+            action = action[0]
 
         if self.continuous_actions:
             action = np.clip(action, -1, 1)[0]
@@ -101,10 +106,10 @@ class StockEnvironment(gym.Env):
         self.history["net_worth"].append(self.net_worth)
         self.history["shares_held"].append(self.shares_held)
 
-        done = self.current_step >= self.max_steps
-        truncated = self.net_worth <= self.initial_balance * 0.10
+        terminated = self.current_step >= self.max_steps
+        truncated  = bool(self.net_worth <= self.initial_balance * 0.10)
 
-        return self._get_obs(), reward, done, truncated, {}
+        return self._get_obs(), reward, terminated, truncated, {}
 
 
     def _continuous_action_logic(self, price: float, action_value: float):

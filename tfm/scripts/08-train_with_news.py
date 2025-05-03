@@ -1,70 +1,54 @@
+# train_dqn_with_optuna.py
+# ──────────────────────────────────────────────────────────────
 import pandas as pd
 from pathlib import Path
-
+from gymnasium.wrappers import TimeLimit
 from stable_baselines3.common.vec_env import DummyVecEnv
 
 from tfm.src.rl.stock_env import StockEnvironment
-from tfm.src.rl.agents.dqn_agent import DQNAgent
-from tfm.src.config.settings import PATH_DATA_PROCESSED
+from tfm.src.rl.agents.dqn_agent import DQNAgent              # <- la classe que has creat
+from tfm.src.config.settings import (
+    PATH_DATA_PROCESSED,
+    PATH_DATA_LOGS,
+    PATH_DATA_MODELS,
+)
 
-# -----------------------------
-# Cargar datos y filtrar ticker
-# -----------------------------
+# 1) Carregar les dades ───────────────────────────────────────
 df = pd.read_csv(PATH_DATA_PROCESSED / "state_features.csv")
-df = df[df["ticker"] == "SPY"]  # Solo un activo
+df = df[df["ticker"] == "SPY"].reset_index(drop=True)
 
-# ------------------------------------
-# Crear entornos (solo uno vectorizado)
-# ------------------------------------
-env = DummyVecEnv([lambda: StockEnvironment(
-    df=df,
-    initial_balance=100000.0,
-    continuous_actions=False,
-)])
+# 2) Crear entorn d’entrenament i d’avaluació ────────────────
+train_env = StockEnvironment(df, initial_balance=10_000, continuous_actions=False)
+eval_env  = StockEnvironment(df.copy(), initial_balance=10_000, continuous_actions=False)
 
-eval_env = DummyVecEnv([lambda: StockEnvironment(
-    df=df,
-    initial_balance=100000.0,
-    continuous_actions=False,
-)])
+# (opcional) limitem la durada màxima d’un episodi per accelerar
+MAX_STEPS = 1_000
+train_env = TimeLimit(train_env, MAX_STEPS)
+eval_env  = TimeLimit(eval_env,  MAX_STEPS)
 
-# ------------------------
-# Definir directorios
-# ------------------------
-model_dir = Path("models/dqn_test")
-log_dir = Path("logs/dqn_test")
+# 3) Carpetes on desarem logs i models ────────────────────────
+run_name  = "dqn_spy_optuna"
+log_dir   = PATH_DATA_LOGS   / run_name
+model_dir = PATH_DATA_MODELS / run_name
+log_dir.mkdir(parents=True, exist_ok=True)
+model_dir.mkdir(parents=True, exist_ok=True)
 
-# ------------------------
-# Hiperparámetros de prueba
-# ------------------------
-params = {
-    "learning_rate": 1e-4,
-    "buffer_size": 10000,
-    "learning_starts": 500,
-    "batch_size": 32,
-    "gamma": 0.99,
-    "train_freq": 4,
-    "target_update_interval": 250,
-    "exploration_fraction": 0.1,
-    "exploration_final_eps": 0.05
-}
+# 4) Crear l’agent ────────────────────────────────────────────
+agent = DQNAgent(
+    env=train_env,
+    eval_env=eval_env,
+    model_dir=model_dir,
+    log_dir=log_dir,
+)
 
-# ------------------------
-# Crear e iniciar el agente
-# ------------------------
-print("env class:", type(env))
-print("eval_env class:", type(eval_env))
-agent = DQNAgent(env, eval_env, model_dir, log_dir, params=params)
 
-# ------------------------
-# Entrenamiento corto
-# ------------------------
-print("🚀 Starting short training...")
-agent.model.learn(total_timesteps=1000)
-print("✅ Training completed.")
+# 5) Buscar hiperparàmetres amb Optuna ────────────────────────
+agent.optimize_hyperparameters(n_trials=30, n_eval_episodes=5)
 
-# ------------------------
-# Evaluación
-# ------------------------
-print("🔍 Evaluating agent...")
-agent.evaluate(n_episodes=1)
+# 6) Entrenament final ────────────────────────────────────────
+agent.train(total_timesteps=500_000)
+agent.save("dqn_final")
+
+# 7) Guardar el model ────────────────────────────────────────
+print(f"✅ Model final desat a {model_dir/'dqn_final.zip'}")
+print(f"📊 Pots obrir TensorBoard amb: tensorboard --logdir {log_dir}")
