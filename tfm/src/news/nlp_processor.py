@@ -102,7 +102,7 @@ class NLProcessor:
             if not self.use_finbert and not self.finbert:
                 return TextBlob(text).sentiment.polarity
 
-            result = self.finbert(text)[0]
+            result = self.finbert([text])[0]
             label = result["label"].lower()
             score = result["score"]
 
@@ -117,7 +117,7 @@ class NLProcessor:
             logger.warning(f"Sentiment analysis failed: {e}")
             return 0.0
 
-    def _get_top_n_articles_as_text(self, df: pd.DataFrame) -> str:
+    def add_sentiment_column(self, df: pd.DataFrame, column: str = "full_text") -> pd.DataFrame:
         """
         Selects the top-N most sentimentally extreme articles from a DataFrame
         and concatenates their full_text into a single string.
@@ -130,8 +130,29 @@ class NLProcessor:
         """
         df = df.copy()
         if "sentiment" not in df.columns:
-            df["sentiment"] = df["full_text"].apply(self.get_sentiment_score)
+            if self.use_finbert and self.finbert:
+                logger.info("Applying FinBERT sentiment analysis in batch...")
+                texts = df[column].tolist()
+                results = self.finbert(texts)
 
+                def label_to_score(res):
+                    label = res["label"].lower()
+                    score = res["score"]
+                    if label == "positive":
+                        return score
+                    elif label == "negative":
+                        return -score
+                    else:
+                        return 0.0
+
+                df["sentiment"] = [label_to_score(r) for r in results]
+            else:
+                logger.info("Applying TextBlob sentiment analysis...")
+                df["sentiment"] = df[column].apply(lambda x: TextBlob(str(x)).sentiment.polarity)
+        return df
+
+    def _get_top_n_articles_as_text(self, df: pd.DataFrame) -> str:
+        df = df.copy()
         df["abs_sentiment"] = df["sentiment"].abs()
         top_articles = df.sort_values("abs_sentiment", ascending=False).head(self.top_n)
         return " ".join(top_articles["full_text"].tolist())
@@ -159,19 +180,20 @@ class NLProcessor:
 
         w2v_vec = self.get_doc_vector(tokens)
         lda_vec = self.get_topic_vector(clean_text)
-        sentiment = self.get_sentiment_score(concatenated_text)
+        sentiment_mean = df["sentiment"].abs().sort_values(ascending=False).head(self.top_n).mean()
         date = df["date"].iloc[0] if "date" in df.columns else pd.NaT
 
         data = {
             "date": date,
             "full_text": concatenated_text,
-            "sentiment": sentiment,
+            "sentiment_mean": sentiment_mean,
             **{f"w2v_{i}": w2v_vec[i] for i in range(len(w2v_vec))},
             **{f"lda_{i}": lda_vec[i] for i in range(len(lda_vec))}
         }
-
+        result = pd.DataFrame([data])
         logger.success("Day-level news transformation completed.")
-        return pd.DataFrame([data])
+
+        return result
 
     def _transform_day_mean_of_top_articles(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -185,7 +207,6 @@ class NLProcessor:
             DataFrame with a single row of averaged news features.
         """
         df = df.copy()
-        df["sentiment"] = df["full_text"].apply(self.get_sentiment_score)
         df["abs_sentiment"] = df["sentiment"].abs()
         top_df = df.sort_values("abs_sentiment", ascending=False).head(self.top_n)
 
@@ -234,8 +255,10 @@ class NLProcessor:
         assert market in ["us", "eu"], "market must be 'us' or 'eu'"
 
         logger.info(f"Starting news transformation for market: {market} using strategy: {strategy}")
-        results = []
 
+        df = self.add_sentiment_column(df)
+
+        results = []
         for date, group in df.groupby(f"market_date_{market}"):
             try:
                 group["date"] = date
@@ -252,8 +275,7 @@ class NLProcessor:
         final_df.rename(columns={f"date_{market}": "date"}, inplace=True)
 
         logger.success(f"Finished transformation for {len(final_df)} days of market: {market}")
-        return final_df
-
+        return self.add_sentiment_column(final_df, column=f"full_text_{market}")
 
     def save(self, path: str):
         logger.info(f"Saving news models to {path}")
@@ -282,9 +304,6 @@ class NLProcessor:
 
         logger.info(f"🧠 Top {top_n} words per topic:")
         words = self.vectorizer.get_feature_names_out()
-
         for idx, topic in enumerate(self.lda_model.components_):
             top_words = [words[i] for i in topic.argsort()[:-top_n - 1:-1]]
             logger.info(f"🟢 Topic {idx}: {' | '.join(top_words)}")
-
-
