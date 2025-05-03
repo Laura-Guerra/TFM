@@ -1,7 +1,6 @@
 """Script to generate news-based features for DRL input."""
 
 import pandas as pd
-from pathlib import Path
 from tfm.src.config.settings import PATH_DATA_PROCESSED
 from tfm.src.news.nlp_processor import NLProcessor
 
