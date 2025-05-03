@@ -21,6 +21,27 @@ news_df = news_df[news_df["date"].notna()]
 news_df.loc[:, "year"] = news_df["date"].dt.year
 news_df = news_df[news_df["year"] >= 2013].sort_values(by="date")
 
+
+# %% Add view of news types in log scale
+news_raw["doc_type"].value_counts().plot(kind="barh", logx=True)
+plt.title("Distribució de tipus de notícies")
+plt.xlabel("Nombre de notícies")
+plt.ylabel("Tipus de notícia")
+plt.tight_layout()
+plt.savefig(PATH_DATA_PROCESSED / "news_types.png")
+plt.show()
+
+
+# Plot of categories, only top 15
+news_raw["section"].value_counts().head(15).plot(kind="barh")
+plt.title("Distribució de seccions")
+plt.xlabel("Nombre de notícies")
+plt.ylabel("Secció")
+plt.tight_layout()
+plt.savefig(PATH_DATA_PROCESSED / "news_sections.png")
+plt.show()
+
+
 # %% Check missing values
 print("Missing values per column:")
 print(news_df.isnull().sum())
@@ -83,20 +104,30 @@ plt.show()
 top_sections = news_df["section"].value_counts().head(10)
 top_subsections = news_df["subsection"].value_counts().head(10)
 
-plt.figure()
-top_sections.plot(kind="barh")
-plt.title("Top 10 seccions")
-plt.xlabel("Nombre de notícies")
-plt.gca().invert_yaxis()
-plt.tight_layout()
-plt.show()
+from matplotlib.gridspec import GridSpec
 
-plt.figure()
-top_subsections.plot(kind="barh")
-plt.title("Top 10 subseccions")
-plt.xlabel("Nombre de notícies")
-plt.gca().invert_yaxis()
+# Create a horizontal multiplot
+fig = plt.figure(figsize=(12, 6))
+gs = GridSpec(1, 2, width_ratios=[1, 1])
+
+# Plot top sections
+ax1 = fig.add_subplot(gs[0])
+top_sections.plot(kind="barh", ax=ax1)
+ax1.set_title("Top 10 seccions")
+ax1.set_xlabel("Nombre de notícies")
+ax1.invert_yaxis()
+ax1.ticklabel_format(style="sci", axis="x", scilimits=(0, 0))
+
+# Plot top subsections
+ax2 = fig.add_subplot(gs[1])
+top_subsections.plot(kind="barh", ax=ax2)
+ax2.set_title("Top 10 subseccions")
+ax2.set_xlabel("Nombre de notícies")
+ax2.invert_yaxis()
+ax2.ticklabel_format(style="sci", axis="x", scilimits=(0, 0))
+
 plt.tight_layout()
+plt.savefig(PATH_DATA_PROCESSED / "top_sections_subsections.png")
 plt.show()
 
 
@@ -113,3 +144,18 @@ keywords_counts = keywords[["name", "value"]].value_counts()
 # %% Save cleaned data
 cleaned_news.to_csv(PATH_DATA_PROCESSED / "articles_cleaned.csv", index=False)
 keywords.to_csv(PATH_DATA_PROCESSED / "keywords_cleaned.csv", index=False)
+
+
+# %% Plot news per month
+cleaned_news["month"] = cleaned_news["date"].dt.month
+cleaned_news["year_month"] = cleaned_news["date"].dt.to_period("Y")
+news_per_month = cleaned_news.groupby("year_month").size()
+news_per_month.plot(kind="bar")
+plt.title("Nombre de notícies per mes")
+plt.xlabel("Any", labelpad=10, rotation=0)
+plt.ylabel("Nombre de notícies")
+plt.xticks(rotation=0)
+plt.grid(axis="y")
+plt.tight_layout()
+plt.savefig(PATH_DATA_PROCESSED / "news_per_year.png")
+plt.show()
