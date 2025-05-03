@@ -1,6 +1,7 @@
 import optuna
 from pathlib import Path
 from stable_baselines3 import DQN
+
 from tfm.src.rl.agents.base_agent import BaseAgent
 
 class DQNAgent(BaseAgent):
