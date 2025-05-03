@@ -48,6 +48,8 @@ class StateAssembler:
         market_norm = self.transform_market(market_df)
 
         if news_df is not None:
+            news_df = news_df.drop(columns=[column for column in news_df.columns if column.startswith("full_text")],
+                                   errors="ignore")
             combined_df = pd.merge(market_norm, news_df, on="date", how="left")
         else:
             combined_df = market_norm
