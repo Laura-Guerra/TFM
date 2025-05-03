@@ -24,6 +24,13 @@ class MarketEnv(gym.Env):
         self.asset_list = self.df["ticker"].unique().tolist()
         self.num_assets = len(self.asset_list)
 
+        # Preload asset data once
+        self.asset_data = {
+            asset: self.df[self.df["ticker"] == asset].reset_index(drop=True)
+            for asset in self.asset_list
+        }
+        self.max_steps = min(len(df) for df in self.asset_data.values()) - 2
+
         # Define action space
         if self.continuous_actions:
             self.action_space = spaces.Box(low=-1, high=1, shape=(self.num_assets,), dtype=np.float32)
@@ -61,8 +68,7 @@ class MarketEnv(gym.Env):
     def _get_obs(self):
         rows = []
         for asset in self.asset_list:
-            asset_df = self.df[self.df["ticker"] == asset].reset_index(drop=True)
-            row_d_minus_1 = asset_df.iloc[self.current_step - 1]
+            row_d_minus_1 = self.asset_data[asset].iloc[self.current_step - 1]
             features = row_d_minus_1[self.feature_columns].values
             rows.append(features)
 
@@ -83,7 +89,7 @@ class MarketEnv(gym.Env):
 
         for i, action in enumerate(actions):
             asset = self.asset_list[i]
-            asset_df = self.df[self.df["ticker"] == asset].reset_index(drop=True)
+            asset_df = self.asset_data[asset]
 
             if self.current_step >= len(asset_df):
                 continue
@@ -98,13 +104,12 @@ class MarketEnv(gym.Env):
 
         self.current_step += 1
 
-        # Update net worth
-        self.net_worth = self.balance
-        for i, asset in enumerate(self.asset_list):
-            asset_df = self.df[self.df["ticker"] == asset].reset_index(drop=True)
-            if self.current_step < len(asset_df):
-                price = asset_df.iloc[self.current_step]["Close"]
-                self.net_worth += self.shares_held[i] * price
+        # Vectorized net worth calculation
+        prices = np.array([
+            self.asset_data[asset].iloc[self.current_step]["Close"]
+            for asset in self.asset_list
+        ])
+        self.net_worth = self.balance + np.sum(self.shares_held * prices)
 
         reward = self.net_worth - self.previous_net_worth
         self.previous_net_worth = self.net_worth
@@ -116,7 +121,7 @@ class MarketEnv(gym.Env):
         self.history["net_worth"].append(self.net_worth)
         self.history["shares_held"].append(self.shares_held.copy())
 
-        done = self.current_step >= min(len(self.df[self.df["ticker"] == asset]) for asset in self.asset_list) - 2
+        done = self.current_step >= self.max_steps
         truncated = self.net_worth <= self.initial_balance * 0.10
 
         return self._get_obs(), reward, done, truncated, {}
