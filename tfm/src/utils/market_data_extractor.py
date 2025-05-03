@@ -5,7 +5,7 @@ from pathlib import Path
 from loguru import logger
 
 class MarketDataExtractor:
-    def __init__(self, tickers: list[str], start: str = "2014-01-01", end: str = "2025-04-21"):
+    def __init__(self, tickers: list[str], start: str = "2014-01-01", end: str = "2025-04-30"):
         """
         Extracts market data and computes indicators.
         """
@@ -27,6 +27,7 @@ class MarketDataExtractor:
             return pd.DataFrame()
 
         df = df.reset_index()
+        df.columns = df.columns.get_level_values(0)
         df.rename(columns={"Date": "date"}, inplace=True)
         df["ticker"] = ticker
         return df
