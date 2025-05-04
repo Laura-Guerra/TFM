@@ -1,3 +1,5 @@
+from datetime import date
+
 import gymnasium
 import numpy as np
 import pandas as pd
@@ -13,14 +15,23 @@ class StockEnvironment(gymnasium.Env):
         df: pd.DataFrame,
         initial_balance: float = 10000.0,
         continuous_actions: bool = False,
+        model_name: str = "dqn",
+        do_save_history: bool = False,
     ):
         super().__init__()
 
         self.df = df.reset_index(drop=True)
         self.initial_balance = initial_balance
         self.continuous_actions = continuous_actions
-
+        self.episode_id = 1
         self.max_steps = len(self.df) - 2
+        self.min_reward = np.inf
+        self.max_reward = -np.inf
+        self.best_episode = None
+        self.worse_episode = None
+        self.model_name = model_name
+        self.do_save_history = do_save_history
+        self.today = date.today().strftime("%Y-%m-%d")
 
         # Define action space para un solo activo
         if self.continuous_actions:
@@ -37,14 +48,6 @@ class StockEnvironment(gymnasium.Env):
             dtype=np.float32
         )
 
-        # Initialize history logging
-        self.history = {
-            "step": [],
-            "date": [],
-            "balance": [],
-            "net_worth": [],
-            "shares_held": []
-        }
 
         self.reset()
 
@@ -54,6 +57,15 @@ class StockEnvironment(gymnasium.Env):
         self.shares_held = 0.0
         self.net_worth = self.initial_balance
         self.previous_net_worth = self.initial_balance
+
+        # Initialize history logging
+        self.history = {
+            "step": [],
+            "date": [],
+            "balance": [],
+            "net_worth": [],
+            "shares_held": []
+        }
 
         return self._get_obs(), {}
 
@@ -108,6 +120,17 @@ class StockEnvironment(gymnasium.Env):
 
         terminated = self.current_step >= self.max_steps
         truncated  = bool(self.net_worth <= self.initial_balance * 0.10)
+        if terminated or truncated:
+            if not self.do_save_history:
+                pass
+            self.save_history(f"{self.today}_{self.model_name}_episode_{self.episode_id}.csv")
+            if self.balance < self.min_reward:
+                self.min_reward = self.balance
+                self.worse_episode = self.episode_id
+            if self.net_worth > self.max_reward:
+                self.max_reward = self.net_worth
+                self.best_episode = self.episode_id
+            self.episode_id += 1
 
         return self._get_obs(), reward, terminated, truncated, {}
 
@@ -186,8 +209,3 @@ class StockEnvironment(gymnasium.Env):
         df_history.to_csv(path, index=False)
         logger.info(f"✅ History saved to {path}")
 
-        # Save metrics to separate file
-        metrics = self.compute_metrics()
-        metrics_path = path.replace(".csv", "_metrics.json")
-        pd.Series(metrics).to_json(metrics_path, indent=4)
-        logger.info(f"Metrics saved to {metrics_path}")

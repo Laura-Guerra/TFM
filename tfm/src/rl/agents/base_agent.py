@@ -32,8 +32,7 @@ class BaseAgent:
             best_model_save_path=str(self.model_dir / "best_model"),
             log_path=str(self.log_dir),
             eval_freq=100,
-            deterministic=True,
-            render=False
+            deterministic=False,  # deixa explorar
         )
 
         self.model.learn(
