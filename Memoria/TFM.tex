@@ -540,16 +540,16 @@ El projecte s'ha desenvolupat seguint una arquitectura modular basada en la sepa
 \begin{itemize}
     \item \textbf{scripts/}: Conté els scripts d'execució independents que permeten executar el procés complet o parcial del projecte per facilitar la depuració del codi.
     \begin{itemize}
-        \item \texttt{01-news\_extraction.py}: descarrega notícies mensuals de l'API del New York Times.
-        \item \texttt{02-join\_news\_extraction.py}: concatena en un únic fitxer les notícies i etiquetes extretes.
-        \item \texttt{03-news\_analysis.py}: filtra notícies i elimina duplicats.
-        \item \texttt{04-news\_cleaning.py}: unifica i neteja els textos, i assigna data efectiva de mercat a les noticies.
-        \item \texttt{05-natural\_lenguage\_processing.py}: aplica tècniques NLP per generar a vectors per al model.
-        \item \texttt{06-market\_data.py}: descarrega dades històriques de SPY i USO, i calcula els indicadors tècnics.
-        \item \texttt{07-state\_builder.py}: fusiona les dades de mercat i notícies per construir l'estat de l'agent.
-        \item \texttt{08-train\_with\_news.py}: entrena els agents DRL (DQN, PPO, SAC).
-        \item \texttt{09-train\_without\_news.py}: entrena els mateixos agents, però només amb dades de mercat, per comparar rendiments.
-        \item \texttt{10-evaluation.py}: avalua els agents entrenats i genera mètriques i gràfics de resultats.
+        \item \texttt{01-news\_extraction.py}: descarrega les notícies mensuals des de l'API del New York Times.
+        \item \texttt{02-join\_news\_extraction.py}: concatena les notícies obtingudes en un únic fitxer i hi afegeix metadades.
+        \item \texttt{03-news\_analysis.py}: filtra notícies repetides i selecciona les més rellevants per dia.
+        \item \texttt{04-news\_cleaning.py}: neteja els textos, elimina soroll i assigna la data efectiva de mercat a cada notícia.
+        \item \texttt{05-natural\_language\_processing.py}: aplica tècniques NLP (Word2Vec, LDA, FinBERT) per obtenir un vector numèric a partir de les notícies.
+        \item \texttt{06-market\_data.py}: descarrega dades històriques dels actius (SPY, USO) i calcula indicadors tècnics.
+        \item \texttt{07-state\_builder.py}: fusiona les dades quantitatives i qualitatives per construir els estats d'entrada de l'agent.
+        \item \texttt{08-dqn\_with\_news.py}, \texttt{09-ppo\_with\_news.py}, \texttt{10-sac\_with\_news.py}: entrenen els agents DQN, PPO i SAC respectivament amb notícies com a part de l'estat.
+        \item \texttt{11-dqn\_without\_news.py}, \texttt{12-ppo\_without\_news.py}, \texttt{13-sac\_without\_news.py}: entrenen els mateixos agents però sense informació qualitativa (només dades de mercat).
+        \item \texttt{14-results.py}: recull i visualitza els resultats obtinguts.
     \end{itemize}
 
     \item \textbf{data/}: directori destinat a les dades d'entrada i sortida del projecte. S'organitza en:

@@ -6,7 +6,7 @@ from loguru import logger
 from tfm.src.config.settings import PATH_DATA_PROCESSED
 from tfm.src.news.news_processor import NewsProcessor
 from tfm.src.news.text_processor import TextProcessor
-from tfm.src.utils.generate_new_market_date import compute_effective_market_date
+from tfm.src.news.generate_new_market_date import compute_effective_market_date
 
 # %% Load data
 news_df = pd.read_csv(PATH_DATA_PROCESSED / "articles_cleaned.csv")
