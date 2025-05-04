@@ -17,6 +17,8 @@ from tfm.src.config.settings import (
     PATH_DATA_MODELS,
 )
 
+
+
 # %% 1. Carrega i separa les dades
 df = pd.read_csv(PATH_DATA_PROCESSED / "state_features.csv", parse_dates=["date"])
 df = df[df["ticker"] == "SPY"].reset_index(drop=True)
@@ -32,12 +34,12 @@ assert not df_val.empty and not df_test.empty, "⚠️ Val o test està buit!"
 
 # %% 2. Entorns
 MAX_STEPS = 1_000
-train_env = Monitor(TimeLimit(StockEnvironment(df_train, 50_000, False), MAX_STEPS))
-val_env   = Monitor(TimeLimit(StockEnvironment(df_val,   50_000, False), MAX_STEPS))
-test_env  = Monitor(TimeLimit(StockEnvironment(df_test,  50_000, False), MAX_STEPS))
+train_env = Monitor(StockEnvironment(df_train, 50_000, False))
+val_env   = Monitor(StockEnvironment(df_val,   50_000, False))
 
 # %% 3. Carpetes
-run_name  = "dqn_spy_split2023"
+today = date.today().strftime("%Y-%m-%d")
+run_name  = f"dqn_spy_{today}"
 log_dir   = PATH_DATA_LOGS   / run_name
 model_dir = PATH_DATA_MODELS / run_name
 log_dir.mkdir(parents=True, exist_ok=True)
@@ -45,26 +47,30 @@ model_dir.mkdir(parents=True, exist_ok=True)
 
 # %% 4. Busca hiperparàmetres
 agent_tune = DQNAgent(train_env, val_env, model_dir, log_dir)
-best_params = agent_tune.optimize_hyperparameters(n_trials=30, n_eval_episodes=5)
+best_params = agent_tune.optimize_hyperparameters(n_trials=2, n_eval_episodes=5)
 
-with (model_dir / "best_params.json").open("w") as f:
+with (model_dir / "best_params_to_delete.json").open("w") as f:
     json.dump(best_params, f, indent=2)
 
 # %% 5. Entrenament final (train + val)
 df_train_full = pd.concat([df_train, df_val]).sort_values("date")
-full_env = Monitor(StockEnvironment(df_train_full, 50_000, False))
 
-# ► activa registre d’episodis
-inner_env = cast(StockEnvironment, full_env.unwrapped)
-inner_env.episode_id = 1
-inner_env.do_save_history = True
+full_train_env_raw = StockEnvironment(df_train_full, 50_000, False, is_train=True)
+test_env_raw = StockEnvironment(df_test, 50_000, False, do_save_history=True)
+full_env = Monitor(full_train_env_raw)
+test_env = Monitor(test_env_raw)
 
 agent = DQNAgent(full_env, test_env, model_dir, log_dir, params=best_params)
 agent.train(total_timesteps=500_000)
 agent.save("dqn_final")
 
-# ─── 6. Desa historial complet  -------------------------------
+# 6. Desa historial complet
 
 print(f"✅ Model final desat a {model_dir/'dqn_final.zip'}")
 print(f"📊 TensorBoard: tensorboard --logdir {log_dir}")
 print(f"📝 Hiperparàmetres: {model_dir/'best_params.json'}")
+
+
+# %% 7. Avaluació
+
+agent.evaluate(n_episodes=20)

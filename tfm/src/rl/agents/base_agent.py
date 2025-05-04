@@ -1,5 +1,6 @@
 
 import os
+from loguru import logger
 
 import numpy as np
 import pandas as pd
@@ -7,7 +8,7 @@ from pathlib import Path
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
 
 class BaseAgent:
-    def __init__(self, env, eval_env, model_dir: Path, log_dir: Path, params: dict):
+    def __init__(self, env, eval_env, model_dir: Path, log_dir: Path, params: dict, with_news: bool = False):
         self.env = env
         self.eval_env = eval_env
         self.model_dir = model_dir
@@ -20,24 +21,24 @@ class BaseAgent:
         self.model_dir.mkdir(parents=True, exist_ok=True)
         self.log_dir.mkdir(parents=True, exist_ok=True)
 
+        if with_news:
+            self.model_name += "_news"
+            self.log_dir = self.log_dir / "news"
+            self.log_dir.mkdir(parents=True, exist_ok=True)
+
+        self.checkpoint_dir = self.model_dir / f"{self.model_name}_checkpoints"
+        self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
     def train(self, total_timesteps: int):
         checkpoint_callback = CheckpointCallback(
-            save_freq=100,  # Every 10k steps
-            save_path=str(self.model_dir / "checkpoints"),
+            save_freq=10000,
+            save_path=str(self.checkpoint_dir),
             name_prefix=self.model_name
-        )
-
-        eval_callback = EvalCallback(
-            self.eval_env,
-            best_model_save_path=str(self.model_dir / "best_model"),
-            log_path=str(self.log_dir),
-            eval_freq=100,
-            deterministic=False,  # deixa explorar
         )
 
         self.model.learn(
             total_timesteps=total_timesteps,
-            callback=[checkpoint_callback, eval_callback]
+            callback=[checkpoint_callback]
         )
 
     def save(self, filename: str = None):

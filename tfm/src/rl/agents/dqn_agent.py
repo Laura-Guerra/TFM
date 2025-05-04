@@ -20,26 +20,23 @@ class DQNAgent(BaseAgent):
             **self.params
         )
 
-    # ────────────────────────────────────────────────────────────────
-    # Optuna Hyper‑parameter Search
-    # ────────────────────────────────────────────────────────────────
     def optimize_hyperparameters(self, n_trials: int = 30, n_eval_episodes: int = 5):
         """
         Cerqueu hiperparàmetres òptims amb Optuna.
         """
 
-        # ── Definim l'objectiu ─────────────────────────────────────
+        # Definim l'objectiu
         def objective(trial: optuna.Trial) -> float:
             trial_params = {
                 "learning_rate": trial.suggest_float("learning_rate", 1e-5, 1e-3, log=True),
                 "buffer_size": 100_000,
-                "learning_starts": trial.suggest_int("learning_starts", 100, 2_000, step=100),
+                "learning_starts": trial.suggest_int("learning_starts", 100, 900, step=100),
                 "batch_size": trial.suggest_categorical("batch_size", [32, 64, 128]),
-                "gamma": trial.suggest_float("gamma", 0.9, 0.9999),
-                "train_freq": trial.suggest_categorical("train_freq", [1, 4, 8, 16]),
-                "target_update_interval": trial.suggest_categorical("target_update_interval", [500, 1_000, 5_000]),
-                "exploration_fraction": trial.suggest_float("exploration_fraction", 0.1, 0.5),
-                "exploration_final_eps": trial.suggest_float("exploration_final_eps", 0.01, 0.2),
+                "gamma": trial.suggest_float("gamma", 0.95, 0.9999),
+                "train_freq": trial.suggest_categorical("train_freq", [1, 4, 8]),
+                "target_update_interval": trial.suggest_categorical("target_update_interval", [500, 1_000, 2_500]),
+                "exploration_fraction": trial.suggest_float("exploration_fraction", 0.2, 0.4),
+                "exploration_final_eps": trial.suggest_float("exploration_final_eps", 0.05, 0.2),
             }
 
             logger.debug(f"🧪 Trial {trial.number}: {trial_params}")
@@ -53,20 +50,19 @@ class DQNAgent(BaseAgent):
             )
             model.learn(total_timesteps=20_000, progress_bar=False)
 
-            # Avaluem
-            mean_reward = self._evaluate_model(model, n_eval_episodes)
+            mean_reward = self._evaluate_optuna_model(model, n_eval_episodes)
             logger.debug(f"🎯 Trial {trial.number} — MeanReward={mean_reward:.2f}")
 
             # Optuna minimitza ⇒ retornem negatiu
             return -mean_reward
 
-        # ── Callback per mostrar millors resultats al vol ───────────
+        # Callback per mostrar millors resultats
         def log_callback(study: optuna.Study, trial: FrozenTrial):
             if study.best_trial == trial:
                 logger.info(f"🏅  Nou millor trial {trial.number}  →  "
                             f"reward = {-trial.value:.2f}")
 
-        logger.info(f"🔍 Començo la cerca d'hiperparàmetres ({n_trials} trials)…")
+        logger.info(f"🔍 Cerca d'hiperparàmetres ({n_trials} trials)…")
         study = optuna.create_study(direction="minimize")
         study.optimize(objective, n_trials=n_trials, callbacks=[log_callback])
 
@@ -82,10 +78,14 @@ class DQNAgent(BaseAgent):
         )
         return self.params
 
-    # ────────────────────────────────────────────────────────────────
-    # Avaluació d'un model
-    # ────────────────────────────────────────────────────────────────
-    def _evaluate_model(self, model, n_episodes: int = 5) -> float:
+    def load(self, checkpoint_path: str, total_timesteps: int = 100_000):
+        """
+        Load a pre-trained model from a checkpoint.
+        """
+        logger.info(f"🔄 Carregant model des de {checkpoint_path}…")
+        self.model = DQN.load(checkpoint_path, env=self.env, tensorboard_log=str(self.log_dir) )
+
+    def _evaluate_optuna_model(self, model, n_episodes: int = 5) -> float:
         """
         Retorna la recompensa mitjana en `n_episodes`.
         Si cap episodi es completa, retorna -inf perquè Optuna el penalitzi.

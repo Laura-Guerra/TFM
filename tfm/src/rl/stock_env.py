@@ -1,10 +1,14 @@
+import json
 from datetime import date
+from pathlib import Path
 
 import gymnasium
 import numpy as np
 import pandas as pd
 from gymnasium import spaces
 from loguru import logger
+
+from tfm.src.config.settings import PATH_DATA_RESULTS
 
 
 class StockEnvironment(gymnasium.Env):
@@ -17,6 +21,7 @@ class StockEnvironment(gymnasium.Env):
         continuous_actions: bool = False,
         model_name: str = "dqn",
         do_save_history: bool = False,
+        is_train = False
     ):
         super().__init__()
 
@@ -32,6 +37,11 @@ class StockEnvironment(gymnasium.Env):
         self.model_name = model_name
         self.do_save_history = do_save_history
         self.today = date.today().strftime("%Y-%m-%d")
+        self.is_train = is_train
+
+        if is_train:
+            logger.info("🔧 Instanciant entorn d'entrenament")
+            logger.info(f"Longitud màxima de l'episodi: {self.max_steps}")
 
         # Define action space para un solo activo
         if self.continuous_actions:
@@ -48,7 +58,6 @@ class StockEnvironment(gymnasium.Env):
             dtype=np.float32
         )
 
-
         self.reset()
 
     def reset(self, seed=None, options=None):
@@ -64,7 +73,8 @@ class StockEnvironment(gymnasium.Env):
             "date": [],
             "balance": [],
             "net_worth": [],
-            "shares_held": []
+            "shares_held": [],
+            "reward": []
         }
 
         return self._get_obs(), {}
@@ -81,7 +91,7 @@ class StockEnvironment(gymnasium.Env):
 
     def step(self, action):
         if isinstance(action, np.ndarray):
-            action = action.item()  # serveix tant per shape () com (1,)
+            action = action.item()
         elif isinstance(action, (list, tuple)):
             action = action[0]
 
@@ -97,6 +107,11 @@ class StockEnvironment(gymnasium.Env):
         row_d = self.df.iloc[self.current_step]
         execution_price = row_d["Open"]
 
+        # Guarda estat previ
+        prev_balance = self.balance
+        prev_shares = self.shares_held
+
+        # Executa acció
         if self.continuous_actions:
             self._continuous_action_logic(execution_price, action)
         else:
@@ -108,29 +123,62 @@ class StockEnvironment(gymnasium.Env):
         next_close_price = self.df.iloc[self.current_step]["Close"]
         self.net_worth = self.balance + self.shares_held * next_close_price
 
-        reward = self.net_worth - self.previous_net_worth
+        # Reward com a % de canvi de net worth
+        delta = (self.net_worth - self.previous_net_worth) / (self.previous_net_worth + 1e-8)
+        reward = delta * 100
+
         self.previous_net_worth = self.net_worth
 
-        # Log the current state
+
+        # Penalització per accions no efectives
+        ineffective = (
+                (action in [1, 2, 3] and self.balance < execution_price) or
+                (action in [4, 5, 6] and self.shares_held == 0)
+        )
+        if ineffective:
+            reward -= 0.5
+
+        # Penalització d'inacció
+        if not hasattr(self, "no_action_steps"):
+            self.no_action_steps = 0
+
+        if self.balance == prev_balance and self.shares_held == prev_shares:
+            self.no_action_steps += 1
+        else:
+            self.no_action_steps = 0
+
+        if self.no_action_steps >= 10:
+            reward -= 1.0
+
+        # Penalització d'estabilitat de capital
+        if self.is_train:
+            if abs(reward) < 0.05:
+                reward -= 0.1
+
+        # Log del pas actual
         self.history["step"].append(self.current_step)
         self.history["date"].append(self.df["date"].iloc[self.current_step])
         self.history["balance"].append(self.balance)
         self.history["net_worth"].append(self.net_worth)
         self.history["shares_held"].append(self.shares_held)
+        self.history["reward"].append(reward)
 
         terminated = self.current_step >= self.max_steps
         truncated  = bool(self.net_worth <= self.initial_balance * 0.10)
         if terminated or truncated:
-            if not self.do_save_history:
-                pass
-            self.save_history(f"{self.today}_{self.model_name}_episode_{self.episode_id}.csv")
-            if self.balance < self.min_reward:
-                self.min_reward = self.balance
-                self.worse_episode = self.episode_id
-            if self.net_worth > self.max_reward:
-                self.max_reward = self.net_worth
-                self.best_episode = self.episode_id
-            self.episode_id += 1
+            if self.do_save_history:
+                self.save_history(
+                    PATH_DATA_RESULTS /
+                    f"{self.model_name}/"
+                    f"{self.today}_{self.model_name}_episode_{self.episode_id}.csv"
+                )
+                if self.balance < self.min_reward:
+                    self.min_reward = self.balance
+                    self.worse_episode = self.episode_id
+                if self.net_worth > self.max_reward:
+                    self.max_reward = self.net_worth
+                    self.best_episode = self.episode_id
+                self.episode_id += 1
 
         return self._get_obs(), reward, terminated, truncated, {}
 
@@ -179,7 +227,7 @@ class StockEnvironment(gymnasium.Env):
     def render(self, mode="human"):
         logger.info(f"Step {self.current_step} | Balance: {self.balance:.2f} | Net Worth: {self.net_worth:.2f} | Holdings: {self.shares_held:.2f}")
 
-    def compute_metrics(self, risk_free_rate: float = 0.0) -> dict:
+    def compute_metrics(self, risk_free_rate: float = 0.02) -> dict:
         """
         Compute financial metrics from the logged history.
         """
@@ -208,4 +256,10 @@ class StockEnvironment(gymnasium.Env):
         df_history = pd.DataFrame(self.history)
         df_history.to_csv(path, index=False)
         logger.info(f"✅ History saved to {path}")
+
+        metrics = self.compute_metrics()
+        metrics_path = Path(path).with_suffix(".json")
+        with open(metrics_path, "w") as f:
+            json.dump(metrics, f, indent=2)
+        logger.info(f"📊 Metrics saved to {metrics_path}")
 
