@@ -99,9 +99,9 @@ citecolor=blue,
 
 En els darrers anys, els algorismes han revolucionat el món de la inversió, transformant el mercat bursàtil. No obstant això, la majoria d'aquests models es basen principalment en dades històriques, com preus, volums i altres indicadors quantitatius. Tot i la seva utilitat, aquest enfocament ignora factors externs que poden influir de manera significativa en els mercats, com ara decisions polítiques o la percepció pública davant d'esdeveniments globals. Així, es deixa de banda una font d'informació clau: l'actualitat financera, política, empresarial i econòmica que influeix en el mercat des de l'exterior.
 
-L'objectiu d'aquest projecte és explorar com la integració d'informació extreta de notícies pot millorar la capacitat predictiva i la presa de decisions d'un agent d'inversió basat en Aprenentatge per Reforç Profund (Deep Reinforcement Learning, en endavant DRL). Es pretén analitzar si la combinació de dades quantitatives (com preus, volums i altres indicadors històrics) i qualitatives pot oferir un avantatge respecte als enfocaments tradicionals basats exclusivament en dades estructurades.
+L’objectiu d’aquest projecte és explorar com la integració d’informació extreta de notícies pot millorar la capacitat predictiva i la presa de decisions d’un agent d’inversió basat en Aprenentatge per Reforç Profund (Deep Reinforcement Learning, en endavant DRL). Es pretén analitzar si la combinació de dades quantitatives (com preus, volums i altres indicadors històrics) i qualitatives pot oferir un avantatge respecte als enfocaments tradicionals basats exclusivament en dades estructurades.
 
-Les dades qualitatives utilitzades en aquest projecte provenen de notícies, que es processen mitjançant tècniques avançades de tractament del llenguatge natural (Natural Language Processing, en endavant NLP). Aquestes tècniques són la freqüència de terme – freqüència inversa en documents (Term Frequency–Inverse Document Frequency, a partir d'ara TF-IDF), la modelització de temes i l'anàlisi de sentiments.
+Les dades qualitatives utilitzades en aquest projecte provenen de notícies, que es processen mitjançant tècniques avançades de tractament del llenguatge natural (Natural Language Processing, en endavant NLP). Aquestes tècniques són la freqüència de terme – freqüència inversa en documents (Term Frequency–Inverse Document Frequency, a partir d’ara TF-IDF), la modelització de temes i l’anàlisi de sentiments.
 
 La rellevància d'aquest estudi rau en el fet que vivim en un món interconnectat, on la informació es transmet de manera gairebé instantània. Canvis polítics, conflictes geopolítics o notícies rellevants sobre grans corporacions poden desencadenar reaccions immediates als mercats. Aquest escenari dinàmic exigeix que les estratègies d'inversió siguin més flexibles, adaptatives i capaces d'incorporar informació contextual actualitzada.
 
@@ -523,6 +523,7 @@ A més, s'ha observat que la incorporació d'informació provinent de xarxes soc
 
 
 
+
 \chapter{Implementació}
 
 En aquest capítol es descriu l'execució pràctica del treball, mostrant com s'han implementat els conceptes teòrics exposats en els capítols anteriors.
@@ -541,24 +542,24 @@ El projecte s'ha desenvolupat seguint una arquitectura modular basada en la sepa
     \begin{itemize}
         \item \texttt{01-news\_extraction.py}: descarrega notícies mensuals de l'API del New York Times.
         \item \texttt{02-join\_news\_extraction.py}: concatena en un únic fitxer les notícies i etiquetes extretes.
-        \item \texttt{03-news\_analysis.py}: filtra notícies, elimina duplicats i analitza la seva qualitat.
-        \item \texttt{04-news\_cleaning.py}: unifica i neteja els textos, i assigna data efectiva de mercat.
-        \item \texttt{05-natural\_lenguage\_processing.py}: aplica tècniques NLP (LDA, sentiments) per generar vectors.
-        \item \texttt{06-market\_data.py}: descarrega dades històriques de SPY i USO, i calcula indicadors tècnics.
-        \item \texttt{07-state\_builder.py}: fusiona dades de mercat i notícies per construir l'estat de l'agent.
-        \item \texttt{08-train\_with\_news.py}: entrena els agents DRL (DQN, PPO, SAC) utilitzant dades de notícies.
+        \item \texttt{03-news\_analysis.py}: filtra notícies i elimina duplicats.
+        \item \texttt{04-news\_cleaning.py}: unifica i neteja els textos, i assigna data efectiva de mercat a les noticies.
+        \item \texttt{05-natural\_lenguage\_processing.py}: aplica tècniques NLP per generar a vectors per al model.
+        \item \texttt{06-market\_data.py}: descarrega dades històriques de SPY i USO, i calcula els indicadors tècnics.
+        \item \texttt{07-state\_builder.py}: fusiona les dades de mercat i notícies per construir l'estat de l'agent.
+        \item \texttt{08-train\_with\_news.py}: entrena els agents DRL (DQN, PPO, SAC).
         \item \texttt{09-train\_without\_news.py}: entrena els mateixos agents, però només amb dades de mercat, per comparar rendiments.
         \item \texttt{10-evaluation.py}: avalua els agents entrenats i genera mètriques i gràfics de resultats.
     \end{itemize}
 
-    \item \textbf{data/}: Directori destinat a les dades d'entrada i sortida del projecte. Organitzat en:
+    \item \textbf{data/}: directori destinat a les dades d'entrada i sortida del projecte. S'organitza en:
     \begin{itemize}
-        \item \texttt{raw/}: conté les dades tal com s'han obtingut (notícies i keywords brutes).
+        \item \texttt{raw/}: conté les dades tal com s'obtenen de les fonts originals (API i llibreria de yfinance).
         \item \texttt{processed/}: conté fitxers ja netejats, vectors NLP, dades de mercat i estats fusionats.
-        \item \texttt{results/}: conté models entrenats, resultats, etc.
+        \item \texttt{results/}: conté models entrenats, resultats, i gràfiques.
     \end{itemize}
 
-    \item \textbf{src/news/}: Conté els mòduls relacionats amb la obtenció i tractament de notícies.
+    \item \textbf{src/news/}: inclou els mòduls relacionats amb l'obtenció i tractament de notícies.
     \begin{itemize}
         \item \texttt{extraction.py}: extracció de notícies des de l'API.
         \item \texttt{news\_processor.py}: generació del text complet i integració d'etiquetes.
@@ -583,11 +584,11 @@ El projecte s'ha desenvolupat seguint una arquitectura modular basada en la sepa
 
 \subsection{Obtenció i preprocessament de les dades}
 
-Les dades utilitzades en aquest projecte provenen de dues fonts principals: notícies econòmiques de caràcter internacional i informació històrica de mercat. El procés ha estat dissenyat per garantir la consistència temporal i la qualitat de les dades abans de la seva integració a l'entorn de simulació.
+Les dades utilitzades en aquest projecte provenen de dues fonts principals: notícies econòmiques de caràcter internacional i informació històrica de mercat.
 
 \subsubsection{Obtenció de notícies}
 
-Les notícies utilitzades en aquest projecte s'han obtingut a través de l'API pública del \textit{New York Times}, cobrint el període comprès entre gener de 2014 i abril de 2025. Per recollir-les, s'ha fet una petició separada per a cada mes dins d'aquest interval. Això ha permès iterar de manera ordenada sobre el període complet i, al mateix temps, respectar les limitacions de l'API de màximes sol·licituds per minut.
+Les notícies utilitzades en aquest projecte s'han obtingut a través de l'API pública del \textit{New York Times}, cobrint el període comprès entre gener de 2014 i abril de 2025. Per  a l'obtenció, s'ha fet una petició separada per a cada mes dins d'aquest interval. Això ha permès iterar sobre el període complet i, al mateix temps, respectar les limitacions de l'API de màximes sol·licituds per minut.
 
 Per a cada notícia descarregada es recuperen diversos camps estructurats, dels quals s'han només conservat aquells més rellevants per als objectius d'aquest projecte. Concretament:
 
@@ -595,7 +596,7 @@ Per a cada notícia descarregada es recuperen diversos camps estructurats, dels 
     \item \textbf{Títol}: frase principal que sintetitza el contingut de la notícia (\texttt{headline.main}).
     \item \textbf{Resum}: breu descripció dels fets destacats, extreta del camp \texttt{snippet} o, si aquest no està disponible, de \texttt{abstract}.
     \item \textbf{URL}: enllaç directe a la notícia publicada en línia (\texttt{web\_url}).
-    \item \textbf{Data de publicació}: data d'emissió de l'article (\texttt{pub\_date}), necessària per sincronitzar cronològicament les notícies amb les dades de mercat.
+    \item \textbf{Data de publicació}: data de publicació de l'article (\texttt{pub\_date}), necessària per sincronitzar cronològicament les notícies amb les dades de mercat.
     \item \textbf{Secció}: categoria principal assignada pel mitjà (\texttt{section\_name}) que indica l'àmbit temàtic general de la notícia.
     \item \textbf{Subsecció}: subcategoria dins la secció principal (\texttt{subsection\_name}) que afina la temàtica de l'article.
     \item \textbf{Mitjà de publicació}: font que ha publicat la notícia (\texttt{source}), generalment el mateix \textit{New York Times}.
@@ -605,33 +606,48 @@ Per a cada notícia descarregada es recuperen diversos camps estructurats, dels 
     \item \textbf{Paraules clau}: conjunt d'etiquetes (\texttt{keywords}) associades a cada notícia, que identifiquen entitats, temes, persones o llocs esmentats. Cada paraula clau inclou el seu tipus (\texttt{name}), el valor concret (\texttt{value}) i la seva rellevància relativa (\texttt{rank}) dins la pròpia notícia.
 \end{itemize}
 
-D'aquest procés d'extracció s'obtenen un total de ??? notícies.
+D'aquest procés s'obtenen aproximadament 1.35 milions de notícies.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/top_sections_subsections.png}
+	\caption{Distribució de noticies per seccions i subseccions}
+	\label{fig:context-anoni1}
+\end{figure}
+
 
 
 \subsubsection*{Neteja i filtratge}
 
-Un cop descarregades, les notícies passen per un procés de neteja i filtratge amb l'objectiu de garantir la qualitat del conjunt de dades i eliminar el contingut irrellevant per al propòsit del projecte.
+Un cop descarregades, les notícies es netegen i es filtren amb l'objectiu de garantir la qualitat del conjunt de dades i eliminar aquelles notícies que no són rellevants per a aquest cas.
 
-En primer lloc, es descarten aquells articles que no disposen de camps essencials com el títol, el resum o la data de publicació. Aquestes notícies incompletes són al voltant del ??? de les notícies obtingudes de l'API i s'eliminen perquè no aporten prou informació semàntica per ser útils en l'etapa de processament del llenguatge natural.
+En primer lloc, es descarten aquells articles que no disposen de camps essencials com el títol, el resum o la data de publicació.
 
-Tot seguit, s'identifiquen casos de duplicació de contingut. És habitual que una mateixa notícia aparegui més d'una vegada amb variacions mínimes (canvis de secció, petites edicions en el títol, etc.). Per tractar aquest cas, es defineix una clau de duplicació basada en la data i el títol, i es conserva només la versió més recent de cada notícia.
+Tot seguit, s'identifiquen casos de duplicació de contingut. És habitual que una mateixa notícia aparegui més d'una vegada amb petites variacions (canvis de secció, petites edicions en el títol, etc.). Per tractar aquest casos, es defineix una clau de duplicació basada en la data i el títol, i es conserva només la versió més recent de cada notícia.
 
-Després d'aquesta neteja estructural, s'aplica un filtratge temàtic per garantir que només es conserven notícies potencialment informatives per a un agent d'inversió. Aquest filtratge es duu a terme en tres nivells:
+Després d'aquesta primera neteja, s'aplica un filtratge segons el contingut per garantir que només es conserven notícies que puguin ser informatives per a un agent d'inversió. Aquest filtratge es duu a terme en tres nivells:
 
 \begin{itemize}
-    \item \textbf{Secció i subsecció}: només s'inclouen notícies publicades en seccions generals com \textit{World}, \textit{U.S.} o \textit{Business Day}, i en subseccions específiques com \textit{Economy}, \textit{Europe}, \textit{International Business} o \textit{Stocks and Bonds}. Aquestes àrees haurien de cobrir les temàtiques econòmiques, polítiques i corporatives son rellevants en aquest cas.
+    \item \textbf{Secció i subsecció}: només s'inclouen notícies publicades en seccions generals com \textit{World}, \textit{U.S.} o \textit{Business Day}, i en subseccions específiques com \textit{Economy}, \textit{Europe}, \textit{International Business} o \textit{Stocks and Bonds}. Aquestes àrees haurien de cobrir les temàtiques econòmiques, polítiques i corporatives son d'interes en aquest cas.
 
     \item \textbf{Tipus de document}: s'exclouen entrades que no siguin de tipus \texttt{article}. Aquesta condició assegura que només es treballa amb notícies completes i redactades amb finalitat informativa.
 
-    \item \textbf{Tipus de material}: es manté només aquell contingut classificat com a \texttt{News} dins del camp \texttt{type\_of\_material}, descartant formats com “Op-Ed”, “Review” o “Obituary”, que no aporten valor en el context d'un model predictiu.
+    \item \textbf{Tipus de material}: es manté només aquell contingut classificat com a \texttt{News} dins del camp \texttt{type\_of\_material}, descartant formats com “Op-Ed”, “Review” o “Obituary”, que no aporten valor informatiu en el context d'un model predictiu.
 \end{itemize}
 
+El resultat d'aquesta neteja són al voltant de 117 mil notícies, al voltant d'un 8\% de les notícies obtingudes de l'API.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{figs/news_per_year.png}
+	\caption{Distribució de les notícies resultants de la neteja i preprocessament per any.}
+	\label{fig:context-anoni1}
+\end{figure}
 
 \subsubsection*{Assignació temporal i unificació de text}
 
 Per garantir una alineació temporal rigorosa entre les notícies i les dades de mercat, s'ha definit per a cada article una data efectiva de mercat. Aquesta data representa el primer dia hàbil en què la notícia hauria pogut ser coneguda i processada pels inversors abans de l'obertura dels mercats.
 
-Aquest pas es fa per evitar biaixos de futur, assegurant que cada decisió presa per l'agent només es basa en informació que hauria d'estar disponible en aquell moment del temps. El càlcul es realitza comprovant si la notícia ha estat publicada abans o després d'una hora límit, que en aquest cas és una hora abans de l'obertura del mercat en el que es treballa. En cas que la notícia arribi massa tard, s'ajorna la seva validesa fins al següent dia hàbil.
+Aquest pas es fa per evitar biaixos de futur, assegurant que cada decisió presa per l'agent només es basa en informació que hauria d'estar disponible en aquell moment del temps. El càlcul es realitza comprovant si la notícia ha estat publicada abans o després d'una hora límit, que en aquest cas és una hora abans de l'obertura del mercat en el que es treballa. En cas que la notícia arribi massa tard, la data efectiva és el següent dia hàbil.
 
 Un cop assignada la data efectiva de mercat, es procedeix a unificar les diferents parts de la notícia en un únic text amb tota la informació. L'objectiu d'aquest pas és que cada notícia pugui ser processada com una única unitat semàntica. Per fer-ho, es construeix un nou camp anomenat \texttt{full\_text}, que concatena tres fonts d'informació: el títol, el resum (\texttt{snippet} o \texttt{abstract}) i les etiquetes semàntiques associades a l'article ordenades per rellevància.
 
@@ -640,7 +656,7 @@ El resultat és una cadena de text que representa tot el contingut de la notíci
 
 \subsubsection{Obtenció de dades de mercat}
 
-Per tal de complementar les característiques qualitatives extretes de les notícies amb informació quantitativa objectiva, s'han seleccionat dos actius financers amb perfils molt diferenciats però estratègicament complementaris. Aquests actius permeten explorar si la incorporació de notícies aporta valor en entorns de naturalesa diversa, com ara tendències de mercat o situacions de crisi.
+Per tal de complementar les característiques qualitatives extretes de les notícies amb informació quantitativa, s'han seleccionat dos actius financers amb perfils diferenciats. Aquests actius permeten explorar si la incorporació de notícies aporta valor en entorns de naturalesa diversa, com ara tendències de mercat o situacions de crisi.
 
 \begin{itemize}
     \item \textbf{SPY}: És l'ETF que replica l'evolució de l'índex S\&P 500, un dels principals indicadors del mercat borsari dels Estats Units. Aquest actiu representa el comportament agregat de grans empreses nord-americanes i és sensible a decisions econòmiques o canvis en la situació política, sobretot la dels Estats Units. El seu perfil respon a escenaris de creixement, volatilitat o estabilitat econòmica.
@@ -649,7 +665,7 @@ Per tal de complementar les característiques qualitatives extretes de les notí
 
 \end{itemize}
 
-Les dades històriques d'aquests dos actius s'han obtingut a través de la llibreria \texttt{yfinance}, que proporciona accés a dades de mercat diàries de fonts com Yahoo Finance. Per a cada actiu s'han descarregat els preus d'obertura, màxim, mínim, tancament, volum i identificador del ticker. El període analitzat comprèn des de gener de 2014 fins a abril de 2025, afegint un marge de 60 dies anteriors per a poder fer el càlcul d'indicadors tècnics a partir de l'1 de gener de 2014.
+L'històric de dades d'aquests actius s'han obtingut a través de la llibreria \texttt{yfinance}, que proporciona accés a dades de mercat diàries de fonts com Yahoo Finance. Per a cada actiu s'han descarregat els preus d'obertura, màxim, mínim, tancament, volum i identificador del ticker. El període analitzat comprèn des de gener de 2014 fins a abril de 2025, afegint un marge de 60 dies anteriors per a poder fer el càlcul d'indicadors tècnics a partir de l'1 de gener de 2014.
 
 \subsubsection*{Càlcul d'indicadors tècnics}
 
@@ -671,7 +687,7 @@ Un cop calculats, aquests indicadors s'afegeixen com a noves columnes al conjunt
 
 L'objectiu del processament de notícies és convertir el conjunt de textos disponibles cada dia en un únic vector. Aquesta representació ha de ser prou compacta per ser integrable amb les dades de mercat, però també ha de capturar el context qualitatiu que pot influir en la dinàmica dels preus.
 
-Cada dia es publiquen múltiples notícies, però per al nostre model, es busca obtenir un únic vector per jornada, de manera que l'estat de l'agent mantingui una estructura temporal uniforme i alineada amb les dades quantitatives. Hi ha diverses estratègies possibles per combinar múltiples textos en una sola representació, però en aquest projecte s'ha optat per seleccionar només les notícies  que presenten un to emocional més extrem, assumint que aquestes tenen un impacte més directe i clar en el mercat.
+Cada dia es publiquen múltiples notícies, però per al nostre model, es busca obtenir un únic vector per jornada, de manera que l'estat de l'agent mantingui una estructura alineada amb les dades quantitatives. Hi ha diverses estratègies possibles per combinar múltiples textos en una sola representació, però en aquest projecte s'ha optat per seleccionar només les notícies que presenten un to emocional més extrem, assumint que aquestes tenen un impacte més directe en el mercat.
 
 Aquest pipeline es pot dividir en quatre fases principals: anàlisi de sentiments, selecció de notícies, construcció del text agregat i extracció de característiques.
 
@@ -679,20 +695,20 @@ Aquest pipeline es pot dividir en quatre fases principals: anàlisi de sentiment
 
 Per a cada dia, s'avalua la polaritat emocional de totes les notícies disponibles per a poder identificar les més rellevants. En un inici, es va considerar l'ús de la llibreria \texttt{TextBlob}, habitual en tasques d'anàlisi de sentiments però, es va observar que aquesta eina, pensada per a llenguatge general, no capturava correctament la rellevància o el context de notícies econòmiques i financeres.
 
-Per aquest motiu, s'ha optat per \texttt{FinBERT}, un model basat en la família de Transformers i entrenat específicament sobre textos del domini financer.
+Per aquest motiu, s'ha optat per \texttt{FinBERT}, un model basat en un Transformador i entrenat específicament sobre textos del domini financer.
 
-La puntuació de sentiment retornada per FinBERT és un valor escalar entre -1 i +1, que expressa la polaritat general del text. A partir d'aquestes puntuacions, es calcula el valor absolut de cada notícia per mesurar-ne la intensitat emocional, i es seleccionen les 5 notícies més extremes (positives o negatives). Aquesta selecció de notícies es basa en la hipòtesi que les notícies amb un sentiment més significatiu, ja sigui positiu o negatiu, són també les que tenen més probabilitat d'influir en els moviments del mercat.
+La puntuació de sentiment retornada per FinBERT és un valor escalar entre -1 i +1, que expressa la polaritat general del text. A partir d'aquestes puntuacions, es calcula el valor absolut de cada notícia per mesurar-ne la intensitat emocional, i es seleccionen les 5 notícies més extremes (positives o negatives). Aquesta selecció de notícies es basa en la hipòtesi que aquestes notícies són també les que tenen més probabilitat d'influir en els moviments del mercat.
 
 
 \subsubsection{Construcció i ús del text per al NLP}
 
 Un cop identificades les notícies més rellevants, es concatenen en una única cadena de text. Aquesta agregació busca resumir el context informatiu dominant del dia en un text apte per al NLP.
 
-Aquest text concatenat s'utilitza com a entrada principal per al pipeline de transformació, però no de la mateixa manera per a totes les tècniques: els canvis o processats que rep aquest text són diferents segons les necessitats de cada procés.
+Aquest text concatenat s'utilitza com a entrada principal per al pipeline de transformació, però no de la mateixa manera per a totes les tècniques, els canvis que rep aquest text són diferents segons les necessitats de cada procés.
 
 \subsubsection{Preprocessament per a models semàntics}
 
-Per a les tècniques de vectorització semàntica com Word2Vec i LDA, el text concatenat es neteja mitjançant el mòdul \texttt{TextProcessor}, que aplica:
+Per a les tècniques Word2Vec i LDA, el text concatenat es neteja mitjançant el mòdul \texttt{TextProcessor}, que aplica:
 
 \begin{itemize}
     \item Conversió a minúscules.
@@ -731,35 +747,34 @@ Per a cada dia, es tokenitza el text i, per a cada paraula, es comprova si exist
 
 \subsubsection{Model LDA}
 
-El model LDA (Latent Dirichlet Allocation) s'utilitza per capturar la distribució temàtica del contingut de notícies de cada dia, complementant així la representació semàntica aportada per Word2Vec.
+El model LDA (Latent Dirichlet Allocation) s'utilitza per capturar la distribució temàtica del contingut de notícies de cada dia.
 
 \paragraph{Entrenament}
 
-L'entrenament del model es fa també sobre notícies anteriors a una data de tall, utilitzant el text net prèviament processat. Primer es construeix una matriu document-terme mitjançant \texttt{CountVectorizer}, que filtra paraules amb poca freqüència per reduir el soroll (en aquest cas, \texttt{min\_df} = 5). Aquesta matriu representa cada dia com un vector de freqüències de paraules.
+L'entrenament del model es fa també sobre notícies anteriors a una data de tall, utilitzant el text net prèviament processat. Primer es construeix una matriu document-terme mitjançant \texttt{CountVectorizer}, que filtra paraules amb poca freqüència per reduir el soroll (\texttt{min\_df} = 5). Aquesta matriu representa cada dia com un vector de freqüències de paraules.
 
-El model LDA s'entrena sobre aquesta matriu i infereix un conjunt de temes latents. Cada tema s'identifica per un conjunt de paraules representatives, i el model aprèn una distribució de probabilitat per a cada document sobre aquests temes. El nombre de temes és un paràmetre configurable (en aquest cas $k = 10$).
+El model LDA s'entrena sobre aquesta matriu i infereix un conjunt de 10 temes. Cada tema s'identifica per un conjunt de paraules representatives, i el model aprèn una distribució de probabilitat per a cada document sobre aquests temes.
 
-??? Incloure exemple de temes i paraules ???
 
 \paragraph{Aplicació}
 
-S'aplica el model LDA entrenat per obtenir un vector de probabilitats de longitud $k$, que reflecteix la proporció en què cada tema és present en el conjunt informatiu del dia. A l'igual que en el cas del Word2Vec, aquest vector també forma part de l'estat d'entrada de l'agent.
+S'aplica el model LDA entrenat per obtenir un vector de probabilitats de longitud $k=10$, que reflecteix la proporció en què cada tema és present en el conjunt informatiu del dia. A l'igual que en el cas del Word2Vec, aquest vector també forma part de l'estat d'entrada de l'agent.
 
 
 \subsubsection{Tractament del sentiment}
 
-Per calcular la polaritat emocional global del dia, s'utilitza el text concatenat original, sense aplicar-hi preprocesament. FinBERT ha estat entrenat amb text natural, i netejar-lo pot eliminar informació rellevant. Per tant, mentre que Word2Vec i LDA treballen millor amb un text net i simplificat, el model de sentiment necessita conservar la forma original per funcionar correctament.
+Per calcular el valor del sentiment global del dia, s'utilitza el text concatenat original, sense aplicar-hi preprocessament. FinBERT ha estat entrenat amb text natural, i netejar-lo pot eliminar informació rellevant. Per tant, mentre que Word2Vec i LDA treballen millor amb un text net i simplificat, el model de sentiment necessita conservar la forma original del text per funcionar correctament.
 
 El resultat final d'aquest NLP és una única fila per dia que conté:
 
 \begin{itemize}
-    \item La data corresponent: No s'inclou com a entrada per a l'agent però és necessària per alinear les variables qualitatives i quantitatives.
+    \item La data: No s'inclou com a entrada per a l'agent però és necessària per alinear les variables qualitatives i quantitatives.
 
-    \item El text complet concatenat: No s'inclou com a entrada per a l'agent però ens serveix per verificar els resultats obtinguts.
+    \item El text complet concatenat: No s'inclou com a entrada per a l'agent però serveix per verificar els resultats obtinguts.
 
-    \item El vector semàntic mitjà obtingut amb Word2Vec: vector de dimensió $d$, on $d$ és el paràmetre \texttt{vector\_size} establert en l'entrenament de Word2Vec. En el nostre cas, aquest vector tindrà dimensió 100.
+    \item El vector semàntic mitjà obtingut amb Word2Vec: vector de dimensió $d=100$, on $d$ és el paràmetre \texttt{vector\_size} establert en l'entrenament de Word2Vec. En el nostre cas, aquest vector tindrà dimensió 100.
 
-    \item El vector temàtic retornat per LDA: vector de dimensió $k$, on $k$ és el nombre de temes definits pel model LDA. En aquest cas, k=10.
+    \item El vector temàtic retornat per LDA: vector de dimensió $k=10$, on $k$ és el nombre de temes definits pel model LDA. En aquest cas, k=10.
 
     \item La puntuació de sentiment agregat: valor numèric entre -1 i +1 retornat per FinBERT per a les notícies concatenades.
 \end{itemize}
@@ -779,16 +794,17 @@ En primer lloc, s'apliquen tècniques de normalització sobre els indicadors tè
 Un cop normalitzades les dades de mercat, es fa la fusió amb les dades qualitatives procedents del processament NLP. Aquesta unió es fa a través de la data de notícies, ja corregida prèviament, amb la data corresponent a valors quantitatius.
 
 
-El resultat final és un \texttt{DataFrame} on cada fila representa una observació temporal única per a un actiu concret. Inclou:
+El resultat final és un dataframe on cada fila representa tota la informació diaria única per a un actiu concret. Inclou:
 \begin{itemize}
     \item Les característiques de mercat (preus, volum, indicadors tècnics normalitzats).
     \item Les característiques qualitatives per dia (Word2Vec, LDA, sentiment).
     \item La variable \texttt{ticker}, que permet identificar l'actiu.
     \item La data, que no serà utilitzada per l'agent però que permet ordenar les dades.
+    \item El nom de l'actiu.
 \end{itemize}
 
 \subsection{Definició de l'entorn}
-L'entorn de simulació utilitzat per entrenar els agents es basa en la llibreria \texttt{OpenAI Gym} i ha estat desenvolupat específicament per a tractar les característiques del projecte. Aquest entorn reprodueix un mercat financer fictici on l'agent pot operar diàriament amb diversos actius, prenent decisions de compra o venda en funció d'un estat observat que inclou tant dades quantitatives com qualitatives.
+L'entorn de simulació utilitzat per entrenar els agents es basa en la llibreria \texttt{OpenAI Gym} i ha estat desenvolupat específicament per a tractar les característiques d'aquest treball. Aquest entorn reprodueix un mercat financer fictici on l'agent pot operar diàriament amb diversos actius, prenent decisions de compra o venda en funció d'un estat observat que inclou tant dades quantitatives com qualitatives.
 
 \subsubsection{Espai d'estats}
 
@@ -803,7 +819,7 @@ Tota aquesta informació s'agrega en un vector d'observació adaptat a la mida d
 
 \subsubsection{Espai d'accions}
 
-L'entorn permet configurar dos tipus d'espai d'accions:
+L'entorn permet configurar dos tipus d'espai d'accions, seleccionables segons l'agent:
 \begin{itemize}
     \item \textbf{Espai d'accions discret}: en aquest mode, l'agent disposa d'un conjunt finit de 7 accions possibles per a cada actiu en cada pas de temps. Aquestes accions són:
     \begin{itemize}
@@ -822,12 +838,12 @@ L'entorn permet configurar dos tipus d'espai d'accions:
         \item Valors negatius indiquen una venda. Per exemple, un valor de -0.4 implica vendre el 40\% de les accions en possessió.
         \item El valor 0 correspon a no operar.
     \end{itemize}
-    Aquest espai és compatible amb SAC, que està dissenyat per a treballar en espais d'accions continus.
+    Aquest espai és apete per l'agent SAC, que està dissenyat per a treballar en espais d'accions continus.
 \end{itemize}
 
 \subsubsection{Funció de recompensa}
 
-La funció de recompensa determina l'objectiu que l'agent intentarà optimitzar. S'ha definit com la variació del valor net de la cartera entre dos dies consecutius:
+La funció de recompensa determina l'objectiu que l'agent intenta optimitzar. S'ha definit com la variació del valor net de la cartera entre dos dies consecutius:
 
 \begin{equation}
 r_t = \text{net\_worth}_t - \text{net\_worth}_{t-1}
@@ -846,9 +862,9 @@ on:
     \item price és el preu de tancament de l'actiu en el dia t.
 \end{itemize}
 
-Aquesta de recompensa incentiva directament l'acumulació de valor, premiant l'agent quan incrementa la seva riquesa i penalitzant-lo quan pren decisions que condueixen a pèrdues.
+Aquesta de recompensa incentiva directament l'acumulació de valor, premiant l'agent quan incrementa la seva riquesa i penalitzant-lo quan pren decisions que provoquen pèrdues.
 
-\subsubsection{Condició de fallida}
+\subsubsection*{Condició de fallida}
 
 Per evitar que l'agent segueixi estratègies massa agressives o especulatives, s'ha definit una condició de terminació anticipada si el valor net de l'agent cau per sota d'un 15\% del seu capital inicial.
 
@@ -871,7 +887,7 @@ A més a més, com es treballa amb múltiples actius, les accions de l'agent s'a
 
 En aquest projecte s'han implementat tres agents diferents: DQN, PPO i SAC. Cada un segueix un enfocament diferent, fet que permet comparar la seva capacitat per adaptar-se a l'entorn financer dissenyat. La implementació es basa en la llibreria \texttt{Stable-Baselines3}, i tots els agents comparteixen una interfície comuna definida a la classe \texttt{BaseAgent}, que gestiona l'entrenament, la validació, la càrrega de models i el registre de resultats.
 
-Tots tres agents contenen paràmetres que defineixen el seu comportament. La selecció d'aquests es fa mitjançant la optimització d'hiperparàmetres de la llibreria \texttt{Optuna}. Aquesta eina permet fer una cerca automàtica de les millors combinacions de paràmetres mitjançant una estratègia de cerca bayesiana.
+Tots tres agents contenen paràmetres que defineixen el seu comportament. La selecció d'aquests es fa mitjançant l'optimització d'hiperparàmetres de la llibreria \texttt{Optuna}. Aquesta eina permet fer una cerca automàtica de les millors combinacions de paràmetres.
 
 \subsubsection{DQN}
 
@@ -897,7 +913,7 @@ El PPO és un algorisme on-policy que utilitza una política estocàstica i opti
     \item \texttt{n\_steps}: nombre de passos recollits abans d'actualitzar la política.
     \item \texttt{batch\_size}: mida del lot per a l'optimització.
     \item \texttt{gamma}: factor de descompte.
-    \item \texttt{gae\_lambda}: controla la suavitat en l'estimació de l'avantatge (GAE).
+    \item \texttt{gae\_lambda}: controla la suavització en l'estimació de l'avantatge (GAE).
     \item \texttt{clip\_range}: límit màxim de canvi per pas d'optimització de la política.
 \end{itemize}
 
@@ -907,7 +923,7 @@ El PPO és un algorisme on-policy que utilitza una política estocàstica i opti
 El SAC és un algorisme off-policy dissenyat per espais d'acció continus. Combina una política estocàstica amb una maximització de l'entropia, afavorint l'exploració i evitant una convergència massa ràpida. El model es compon de dues xarxes crítiques, una xarxa actor i xarxes objectiu. Els paràmetres ajustats són:
 
 \begin{itemize}
-    \item \texttt{learning\_rate}: velocitat d'aprenentatge.
+    \item \texttt{learning\_rate}: taxa d'aprenentatge.
     \item \texttt{buffer\_size}: mida del buffer d'experiències.
     \item \texttt{batch\_size}: mida dels lots d'entrenament.
     \item \texttt{gamma}: factor de descompte.
@@ -918,7 +934,7 @@ El SAC és un algorisme off-policy dissenyat per espais d'acció continus. Combi
 
 \subsection{Entrenament dels agents}
 
-Per entrenar els agents es parteix d'un conjunt de dades complet que es divideix en dues parts: el \textbf{80\% inicial} del període històric s'utilitza com a conjunt d'entrenament, i el \textbf{20\% restant} es reserva per a fer una validació on el model no ha vist cap de les dades.
+Per entrenar els agents es parteix d'un conjunt de dades complet que es divideix en dues parts: les dades des de l'01-01-2014 fins el 31-12-2023 s'utilitzen com a conjunt d'entrenament, i a partir de l'01-01-2024 es reserva per a fer una validació on el model no ha vist cap de les dades.
 
 Abans d'entrenar definitivament cada agent, es duu a terme un procés d'optimització d'hiperparàmetres utilitzant la llibreria \texttt{Optuna}. Per cada configuració provada, s'entrena un model durant un nombre limitat de passos i s'avaluen les seves prestacions mitjançant la recompensa mitjana obtinguda sobre episodis de validació curta. Aquest procediment s'ha aplicat individualment a DQN, PPO i SAC, utilitzant espais de cerca adaptats a la naturalesa de cada algorisme.
 
@@ -926,7 +942,7 @@ Un cop identificats els millors hiperparàmetres per a cada agent, es realitza l
 
 \subsection{Rendiment de l'agent}
 
-Per avaluar la qualitat dels agents entrenats, s'utilitza el 20\% final del conjunt de dades com a escenari de test. Durant aquesta fase, l'agent opera sense exploració i es limita a executar la seva política optimitzada tal com es va aprendre durant l'entrenament.
+Per avaluar la qualitat dels agents entrenats, s'utilitzen les dades a partir del 2024 com a escenari de test. Durant aquesta fase, l'agent opera sense exploració i es limita a executar la seva política optimitzada tal com es va aprendre durant l'entrenament.
 
 La validació es realitza sobre diversos episodis i s'avalua a partir de mètriques clàssiques de rendiment en finances quantitatives:
 
@@ -941,7 +957,6 @@ La validació es realitza sobre diversos episodis i s'avalua a partir de mètriq
 \end{itemize}
 
 Totes aquestes mètriques es calculen per a cada agent de manera agregada i també individualment per a cada episodi. Això permet comparar el comportament mitjà, així com la seva consistència entre simulacions.
-
 
 
 % \chapter{Glossari}
