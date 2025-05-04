@@ -99,9 +99,9 @@ citecolor=blue,
 
 En els darrers anys, els algorismes han revolucionat el món de la inversió, transformant el mercat bursàtil. No obstant això, la majoria d'aquests models es basen principalment en dades històriques, com preus, volums i altres indicadors quantitatius. Tot i la seva utilitat, aquest enfocament ignora factors externs que poden influir de manera significativa en els mercats, com ara decisions polítiques o la percepció pública davant d'esdeveniments globals. Així, es deixa de banda una font d'informació clau: l'actualitat financera, política, empresarial i econòmica que influeix en el mercat des de l'exterior.
 
-L’objectiu d’aquest projecte és explorar com la integració d’informació extreta de notícies pot millorar la capacitat predictiva i la presa de decisions d’un agent d’inversió basat en Aprenentatge per Reforç Profund (Deep Reinforcement Learning, en endavant DRL). Es pretén analitzar si la combinació de dades quantitatives (com preus, volums i altres indicadors històrics) i qualitatives pot oferir un avantatge respecte als enfocaments tradicionals basats exclusivament en dades estructurades.
+L'objectiu d'aquest projecte és explorar com la integració d'informació extreta de notícies pot millorar la capacitat predictiva i la presa de decisions d'un agent d'inversió basat en Aprenentatge per Reforç Profund (Deep Reinforcement Learning, en endavant DRL). Es pretén analitzar si la combinació de dades quantitatives (com preus, volums i altres indicadors històrics) i qualitatives pot oferir un avantatge respecte als enfocaments tradicionals basats exclusivament en dades estructurades.
 
-Les dades qualitatives utilitzades en aquest projecte provenen de notícies, que es processen mitjançant tècniques avançades de tractament del llenguatge natural (Natural Language Processing, en endavant NLP). Aquestes tècniques són la freqüència de terme – freqüència inversa en documents (Term Frequency–Inverse Document Frequency, a partir d’ara TF-IDF), la modelització de temes i l’anàlisi de sentiments.
+Les dades qualitatives utilitzades en aquest projecte provenen de notícies, que es processen mitjançant tècniques avançades de tractament del llenguatge natural (Natural Language Processing, en endavant NLP). Aquestes tècniques són la freqüència de terme – freqüència inversa en documents (Term Frequency–Inverse Document Frequency, a partir d'ara TF-IDF), la modelització de temes i l'anàlisi de sentiments.
 
 La rellevància d'aquest estudi rau en el fet que vivim en un món interconnectat, on la informació es transmet de manera gairebé instantània. Canvis polítics, conflictes geopolítics o notícies rellevants sobre grans corporacions poden desencadenar reaccions immediates als mercats. Aquest escenari dinàmic exigeix que les estratègies d'inversió siguin més flexibles, adaptatives i capaces d'incorporar informació contextual actualitzada.
 
@@ -763,31 +763,45 @@ S'aplica el model LDA entrenat per obtenir un vector de probabilitats de longitu
 
 \subsubsection{Tractament del sentiment}
 
-Per calcular el valor del sentiment global del dia, s'utilitza el text concatenat original, sense aplicar-hi preprocessament. FinBERT ha estat entrenat amb text natural, i netejar-lo pot eliminar informació rellevant. Per tant, mentre que Word2Vec i LDA treballen millor amb un text net i simplificat, el model de sentiment necessita conservar la forma original del text per funcionar correctament.
+Per calcular el valor del sentiment global del dia, s'utilitza el text concatenat original, sense aplicar-hi preprocessament. FinBERT ha estat entrenat amb text natural, i netejar-lo pot eliminar informació rellevant.
 
-El resultat final d'aquest NLP és una única fila per dia que conté:
+A partir d'aquest text i de les notícies més rellevants del dia, es calculen tres mètriques de sentiment:
 
 \begin{itemize}
-    \item La data: No s'inclou com a entrada per a l'agent però és necessària per alinear les variables qualitatives i quantitatives.
-
-    \item El text complet concatenat: No s'inclou com a entrada per a l'agent però serveix per verificar els resultats obtinguts.
-
-    \item El vector semàntic mitjà obtingut amb Word2Vec: vector de dimensió $d=100$, on $d$ és el paràmetre \texttt{vector\_size} establert en l'entrenament de Word2Vec. En el nostre cas, aquest vector tindrà dimensió 100.
-
-    \item El vector temàtic retornat per LDA: vector de dimensió $k=10$, on $k$ és el nombre de temes definits pel model LDA. En aquest cas, k=10.
-
-    \item La puntuació de sentiment agregat: valor numèric entre -1 i +1 retornat per FinBERT per a les notícies concatenades.
+    \item \textbf{Sentiment global del dia}: valor entre -1 i +1 obtingut aplicant FinBERT sobre el text complet concatenat.
+    \item \textbf{Mitjana del sentiment}: mitjana aritmètica de les notícies més rellevants.
+    \item \textbf{Sentiment màxim}: valor de sentiment més positiu entre les notícies.
+    \item \textbf{Sentiment mínim}: valor de sentiment més negatiu entre les notícies.
 \end{itemize}
 
-Aquest vector representa la part qualitativa de l'estat que l'agent d'aprenentatge per reforç observarà en cada pas. Amb aquest enfocament s'intenta capturar simultàniament el significat, la temàtica i el to emocional de les notícies més destacades.
+Finalment, el resultat final d'aquest NLP és una única fila per dia que conté:
 
+\begin{itemize}
+    \item \textbf{Data}: no s'inclou com a entrada per a l'agent, però és necessària per alinear les variables qualitatives i quantitatives.
+
+    \item \textbf{Text complet concatenat}: tampoc s'inclou com a entrada, però serveix per verificar els resultats obtinguts o fer anàlisi qualitativa.
+
+    \item \textbf{Vector semàntic mitjà} obtingut amb Word2Vec: vector de dimensió $d=100$, resultat de la mitjana dels vectors de paraula de les notícies del dia.
+
+    \item \textbf{Vector temàtic} retornat per LDA: vector de probabilitats de dimensió $k=10$, que representa la presència relativa de cada tema.
+
+    \item \textbf{Sentiment global del dia}: valor entre -1 i +1 obtingut per FinBERT aplicat al text concatenat.
+
+    \item \textbf{Mitjana del sentiment}: mitjana aritmètica de les puntuacions individuals.
+
+    \item \textbf{Sentiment màxim}: valor més positiu entre totes les notícies del dia.
+
+    \item \textbf{Sentiment mínim}: valor més negatiu entre totes les notícies del dia.
+\end{itemize}
+
+Aquest vector representa la part qualitativa de l'estat que l'agent d'aprenentatge per reforç observarà en cada pas.
 
 \subsection{Construcció de l'estat}
 
 L'objectiu d'aquesta etapa és unir les característiques qualitatives derivades del processament de notícies amb les variables quantitatives provinents del mercat per formar un únic vector d'estat que l'agent pugui revisar durant la seva execució.
 
 \subsubsection{Normalització de dades quantitatives}
-En primer lloc, s'apliquen tècniques de normalització sobre els indicadors tècnics de mercat. El model utilitza un subconjunt seleccionat de variables: SMA, l'índex de força relativa RSI, l'indicador MACD i el volum negociat. Aquestes variables s'estandarditzen mitjançant un \texttt{StandardScaler}, per evitar efectes associats a que les dades estiguin en diferents escales.
+En primer lloc, s'apliquen tècniques de normalització sobre els indicadors tècnics de mercat. El model utilitza un subconjunt seleccionat de variables: SMA, l'índex de força relativa RSI i l'indicador MACD. Aquestes variables s'estandarditzen mitjançant un \texttt{StandardScaler}, per evitar efectes associats a que les dades estiguin en diferents escales.
 
 \subsubsection{Fusió amb les característiques qualitatives}
 
@@ -800,28 +814,27 @@ El resultat final és un dataframe on cada fila representa tota la informació d
     \item Les característiques qualitatives per dia (Word2Vec, LDA, sentiment).
     \item La variable \texttt{ticker}, que permet identificar l'actiu.
     \item La data, que no serà utilitzada per l'agent però que permet ordenar les dades.
-    \item El nom de l'actiu.
 \end{itemize}
 
 \subsection{Definició de l'entorn}
-L'entorn de simulació utilitzat per entrenar els agents es basa en la llibreria \texttt{OpenAI Gym} i ha estat desenvolupat específicament per a tractar les característiques d'aquest treball. Aquest entorn reprodueix un mercat financer fictici on l'agent pot operar diàriament amb diversos actius, prenent decisions de compra o venda en funció d'un estat observat que inclou tant dades quantitatives com qualitatives.
+L'entorn de simulació utilitzat per entrenar els agents es basa en la llibreria \texttt{Gymnasium} i ha estat desenvolupat específicament per a tractar les característiques d'aquest treball. Aquest entorn reprodueix un mercat financer fictici on l'agent pot operar diàriament amb un actius, prenent decisions de compra o venda en funció d'un estat observat que inclou tant dades quantitatives com qualitatives.
 
 \subsubsection{Espai d'estats}
 
 L'estat observat en cada pas temporal està format per:
 \begin{itemize}
-    \item Les característiques del dia anterior (\texttt{d-1}) de cada actiu: indicadors tècnics, preus i dades de volum.
+    \item Les característiques del dia anterior (\texttt{d-1}) de l'actiu: indicadors tècnics, preus i dades de volum.
     \item Les característiques qualitatives de les notícies fins al moment de apertura del mercat, comunes a tots els actius: vector Word2Vec (dimensió 100), vector LDA (dimensió $k=10$) i sentiment (escala de -1 a 1).
     \item El diners restants actuals (\texttt{balance}) i el valor net de la cartera (\texttt{net\_worth}).
 \end{itemize}
 
-Tota aquesta informació s'agrega en un vector d'observació adaptat a la mida de la cartera i al nombre d'actius.
+Tota aquesta informació s'afegeix en un vector d'observació.
 
 \subsubsection{Espai d'accions}
 
 L'entorn permet configurar dos tipus d'espai d'accions, seleccionables segons l'agent:
 \begin{itemize}
-    \item \textbf{Espai d'accions discret}: en aquest mode, l'agent disposa d'un conjunt finit de 7 accions possibles per a cada actiu en cada pas de temps. Aquestes accions són:
+    \item \textbf{Espai d'accions discret}: en aquest mode, l'agent disposa d'un conjunt finit de 7 accions possibles per a cada cada pas de temps. Aquestes accions són:
     \begin{itemize}
         \item \texttt{0}. No fer res.
         \item \texttt{1}. Comprar el 25\% del capital disponible.
@@ -832,25 +845,25 @@ L'entorn permet configurar dos tipus d'espai d'accions, seleccionables segons l'
         \item \texttt{6}. Vendre el 100\% de les accions en cartera.
     \end{itemize}
 
-    \item \textbf{Espai d'accions continu}: en aquest mode, l'agent retorna un valor real entre -1 i 1 per a cada actiu. Aquest valor representa una acció contínua:
+    \item \textbf{Espai d'accions continu}: en aquest mode, l'agent retorna un valor real entre -1 i 1. Aquest valor representa una acció contínua:
     \begin{itemize}
         \item Valors positius indiquen una compra. Per exemple, un valor de 0.6 implica comprar el nombre d'accions que pugui amb el 60\% del capital disponible.
         \item Valors negatius indiquen una venda. Per exemple, un valor de -0.4 implica vendre el 40\% de les accions en possessió.
         \item El valor 0 correspon a no operar.
     \end{itemize}
-    Aquest espai és apete per l'agent SAC, que està dissenyat per a treballar en espais d'accions continus.
+    Aquest espai és apte per l'agent SAC, que està dissenyat per a treballar en espais d'accions continus.
 \end{itemize}
 
 \subsubsection{Funció de recompensa}
 
-La funció de recompensa determina l'objectiu que l'agent intenta optimitzar. S'ha definit com la variació del valor net de la cartera entre dos dies consecutius:
+La funció de recompensa determina l'objectiu que l'agent intenta optimitzar. En aquest cas, s'ha definit com la variació relativa del valor net de la cartera entre dos dies consecutius:
 
 \begin{equation}
-r_t = \text{net\_worth}_t - \text{net\_worth}_{t-1}
+r_t = \frac{\text{net\_worth}_t - \text{net\_worth}_{t-1}}{\text{net\_worth}_{t-1}} \cdot 100
 \end{equation}
 
+El valor net de la cartera (\texttt{net\_worth}) es calcula com la suma de l'efectiu disponible i el valor de mercat de totes les accions en propietat:
 
-On net worth és una mesura del patrimoni total de l'agent en un moment determinat. Es calcula com la suma de l'efectiu disponible i el valor de mercat de totes les posicions en cartera, és a dir, de totes les accions que l'agent manté en propietat:
 \begin{equation}
 \text{net\_worth}_t = \text{cash}_t + \sum_{i=1}^{N} \left( \text{n\_shares}_i \cdot \text{price}_i \right)
 \end{equation}
@@ -862,30 +875,38 @@ on:
     \item price és el preu de tancament de l'actiu en el dia t.
 \end{itemize}
 
-Aquesta de recompensa incentiva directament l'acumulació de valor, premiant l'agent quan incrementa la seva riquesa i penalitzant-lo quan pren decisions que provoquen pèrdues.
+A més de la recompensa principal, s'han incorporat penalitzacions suaus per incentivar un comportament actiu en l'agent:
+
+\begin{itemize}
+    \item \textbf{Accions inefectives}: si l'agent intenta comprar sense tenir diners o vendre sense tenir accions, es penalitza la recompensa.
+    \item \textbf{Inacció prolongada}: si l'agent no compra ni ven durant més de 10 passos consecutius, s'aplica una penalització a la recompensa.
+    \item \textbf{Estabilitat de capital durant la fase d'entrenament}: es penalitzen també els canvis mínims en el valor net (inferiors al 0.05\%), per evitar que l'agent opti per una estratègia massa conservadora o inactiva.
+\end{itemize}
+
+Aquestes recompenses i penalitzacions pretenen que l'agent tingui comportaments proactius alhora que incentiven l'augment de riquesa i penalitzen les pèrdues.
 
 \subsubsection*{Condició de fallida}
 
-Per evitar que l'agent segueixi estratègies massa agressives o especulatives, s'ha definit una condició de terminació anticipada si el valor net de l'agent cau per sota d'un 15\% del seu capital inicial.
+Per evitar que l'agent segueixi estratègies massa especulatives, s'ha definit una condició de finalització anticipada si el valor net de l'agent cau per sota d'un 15\% del seu capital inicial.
 
 \subsubsection{Mecàniques de cada pas}
 
 L'agent pren les decisions basant-se en la informació disponible abans de l'obertura del mercat. De manera que, l'observable que s'utilitza per generar l'estat és el preu de tancament del dia anterior, simulant així el comportament d'un inversor que analitza el mercat amb dades del dia anterior. Tot i això, les accions que pren l'agent s'executen a partir del preu d'obertura del dia actual, tal com succeeix en un entorn real on les ordres es poden enviar abans que el mercat obri, però no s'executen fins que s'inicia la sessió.
 
-A més a més, com es treballa amb múltiples actius, les accions de l'agent s'apliquen de manera seqüencial i independent per a cada actiu. El procés complet per a cada actiu en cada pas temporal segueix els passos següents:
+El procés complet per a cada actiu en cada pas temporal segueix els passos següents:
 
 \begin{enumerate}
-    \item S'interpreta l'acció assignada per l'agent, que pot correspondre a una compra, una venda o la decisió de mantenir la posició.
+    \item S'interpreta l'acció assignada per l'agent.
     \item Es calcula la quantitat a comprar o vendre tenint en compte el capital disponible o les accions en cartera, i es determina el cost de l'operació utilitzant el preu d'obertura del dia $t$.
-    \item S'executa l'operació i s'actualitza l'estat intern de la cartera: saldo líquid, nombre d'accions mantingudes i valor net total (\texttt{net\_worth}).
-    \item Es registra tota la informació rellevant del pas: número d'iteració, data, accions realitzades, saldo, valor net i posicions.
+    \item S'executa l'operació i s'actualitza l'estat intern de la cartera: saldo, nombre d'accions mantingudes i valor net total (\texttt{net\_worth}).
+    \item Es registra tota la informació rellevant del pas: número d'iteració, data, accions realitzades, saldo, accions, valor net i recompensa.
     \item Finalment, es genera i retorna la nova observació de l'entorn, juntament amb la recompensa obtinguda i un indicador de finalització de l'episodi si escau.
 \end{enumerate}
 
 
 \subsection{Implementació dels agents}
 
-En aquest projecte s'han implementat tres agents diferents: DQN, PPO i SAC. Cada un segueix un enfocament diferent, fet que permet comparar la seva capacitat per adaptar-se a l'entorn financer dissenyat. La implementació es basa en la llibreria \texttt{Stable-Baselines3}, i tots els agents comparteixen una interfície comuna definida a la classe \texttt{BaseAgent}, que gestiona l'entrenament, la validació, la càrrega de models i el registre de resultats.
+En aquest projecte s'han implementat tres agents diferents: DQN, PPO i SAC. Cada un segueix un enfocament diferent, fet que permet comparar la seva capacitat per adaptar-se a l'entorn financer dissenyat. La implementació es basa en la llibreria \texttt{Stable-Baselines3}, i tots els agents comparteixen una interfície comuna definida a la classe \texttt{BaseAgent}, que gestiona l'entrenament i la validació.
 
 Tots tres agents contenen paràmetres que defineixen el seu comportament. La selecció d'aquests es fa mitjançant l'optimització d'hiperparàmetres de la llibreria \texttt{Optuna}. Aquesta eina permet fer una cerca automàtica de les millors combinacions de paràmetres.
 
@@ -933,18 +954,30 @@ El SAC és un algorisme off-policy dissenyat per espais d'acció continus. Combi
 
 
 \subsection{Entrenament dels agents}
+Per entrenar els agents, es parteix d'un conjunt de dades històriques que es divideixen en tres períodes consecutius.
+\begin{itemize}
+\item \textbf{Train}: de l'01-01-2014 al 31-12-2021.
+\item \textbf{Validació}: de l'01-01-2022 al 31-12-2023.
+\item \textbf{Test}: de l'01-01-2024 al 30-04-2025.
+\end{itemize}
 
-Per entrenar els agents es parteix d'un conjunt de dades complet que es divideix en dues parts: les dades des de l'01-01-2014 fins el 31-12-2023 s'utilitzen com a conjunt d'entrenament, i a partir de l'01-01-2024 es reserva per a fer una validació on el model no ha vist cap de les dades.
+Les dues primeres parts s'utilitzen per ajustar el model, mentre que les dades de Test es reserven exclusivament per l'avaluació del model.
 
-Abans d'entrenar definitivament cada agent, es duu a terme un procés d'optimització d'hiperparàmetres utilitzant la llibreria \texttt{Optuna}. Per cada configuració provada, s'entrena un model durant un nombre limitat de passos i s'avaluen les seves prestacions mitjançant la recompensa mitjana obtinguda sobre episodis de validació curta. Aquest procediment s'ha aplicat individualment a DQN, PPO i SAC, utilitzant espais de cerca adaptats a la naturalesa de cada algorisme.
+\subsubsection{Cerca d'hiperparàmetres}
+Abans de fer l'entrenament definitiu, s'executa una optimització d'hiperparàmetres mitjançant la llibreria Optuna. Aquesta eina permet realitzar una cerca eficient mitjançant optimització bayesiana, adaptant les propostes en funció dels resultats obtinguts en iteracions anteriors.
 
-Un cop identificats els millors hiperparàmetres per a cada agent, es realitza l'entrenament definitiu. Aquest es duu a terme sobre l'entorn descrit prèviament, amb observacions diàries i una funció de recompensa basada en la variació del valor net de la cartera. Durant l'entrenament, s'utilitzen callbacks de validació periòdica i emmagatzematge automàtic del millor model obtingut segons el rendiment en un entorn de validació separat.
+Per a cada intent que executa Optuna, es crea un agent amb una combinació específica d'hiperparàmetres seleccionada automàticament d'entrenament, i es valida seguidament sobre l'entorn de validació, executant 5 episodis complets.
 
-\subsection{Rendiment de l'agent}
+La mètrica utilitzada per escollir els millors hiperparàmetres és la recompensa mitjana obtinguda en els capítols de validació. El procés de cerca es repeteix 30 vegades, i el conjunt d'hiperparàmetres amb millor rendiment mitjà es desa com a configuració òptima.
 
-Per avaluar la qualitat dels agents entrenats, s'utilitzen les dades a partir del 2024 com a escenari de test. Durant aquesta fase, l'agent opera sense exploració i es limita a executar la seva política optimitzada tal com es va aprendre durant l'entrenament.
+\subsubsection{Entrenament final}
+Un cop identificats els millors hiperparàmetres per a cada agent, es duu a terme un entrenament complet utilitzant la unió dels conjunts d'entrenament i validació. En aquest cas l'entrenament s'executa durant 500 mil passos. Aquest model entrenat es desa i és el que s'utilitza posteriorment per l'avaluació de l'agent.
 
-La validació es realitza sobre diversos episodis i s'avalua a partir de mètriques clàssiques de rendiment en finances quantitatives:
+\subsection{Rendiment dels agents}
+
+Per avaluar la qualitat dels agents entrenats, s'utilitzen les dades a partir del 2024 com a escenari de test. Durant aquesta fase, l'agent opera sense exploració i es limita a executar la seva política optimitzada tal com ha après durant l'entrenament.
+
+La validació es realitza sobre diversos episodis i s'avalua a partir de les següents mètriques:
 
 \begin{itemize}
     \item \textbf{Recompensa acumulada}: suma total de les recompenses obtingudes durant un episodi. Reflecteix el guany brut en valor net.
@@ -956,7 +989,6 @@ La validació es realitza sobre diversos episodis i s'avalua a partir de mètriq
     \item \textbf{Retorn mitjà}: mitjana del canvi percentual diari de la cartera, acumulat durant tot l'episodi. Mostra la capacitat sostinguda de generar guanys.
 \end{itemize}
 
-Totes aquestes mètriques es calculen per a cada agent de manera agregada i també individualment per a cada episodi. Això permet comparar el comportament mitjà, així com la seva consistència entre simulacions.
 
 
 % \chapter{Glossari}

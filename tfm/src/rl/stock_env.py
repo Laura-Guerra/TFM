@@ -164,7 +164,7 @@ class StockEnvironment(gymnasium.Env):
         self.history["reward"].append(reward)
 
         terminated = self.current_step >= self.max_steps
-        truncated  = bool(self.net_worth <= self.initial_balance * 0.10)
+        truncated  = bool(self.net_worth <= self.initial_balance * 0.15)
         if terminated or truncated:
             if self.do_save_history:
                 self.save_history(
