@@ -166,6 +166,8 @@ class StockEnvironment(gymnasium.Env):
         terminated = self.current_step >= self.max_steps
         truncated  = bool(self.net_worth <= self.initial_balance * 0.15)
         if terminated or truncated:
+            if self.episode_id % 10 == 0 and self.is_train:
+                logger.info(f"Episode {self.episode_id} finished at {self.episode_id}")
             if self.do_save_history:
                 self.save_history(
                     PATH_DATA_RESULTS /
@@ -178,7 +180,7 @@ class StockEnvironment(gymnasium.Env):
                 if self.net_worth > self.max_reward:
                     self.max_reward = self.net_worth
                     self.best_episode = self.episode_id
-                self.episode_id += 1
+            self.episode_id += 1
 
         return self._get_obs(), reward, terminated, truncated, {}
 
