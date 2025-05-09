@@ -66,7 +66,6 @@ class StockEnvironment(gymnasium.Env):
         max_start = len(self.df) - self.episode_length - 1
         self.current_step = np.random.randint(1, max_start)
         self.start_step = self.current_step
-        self.current_step = np.random.randint(self.lookback_window_size, len(self.df) - 1)
         self.balance = self.initial_balance
         self.shares_held = 0.0
         self.net_worth = self.initial_balance
@@ -172,7 +171,7 @@ class StockEnvironment(gymnasium.Env):
         truncated  = bool(self.net_worth <= self.initial_balance * 0.15)
         if terminated or truncated:
             if self.episode_id % 10 == 0 and self.is_train:
-                logger.info(f"Episode {self.episode_id} finished at {self.episode_id}")
+                logger.info(f"Episode {self.episode_id} finished at {self.current_step}")
             if self.do_save_history:
                 self.save_history(
                     PATH_DATA_RESULTS /
