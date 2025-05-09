@@ -32,7 +32,7 @@ class DQNAgent(BaseAgent):
             trial_params = {
                 "learning_rate": trial.suggest_float("learning_rate", 1e-5, 1e-3, log=True),
                 "buffer_size": 100_000,
-                "learning_starts": trial.suggest_int("learning_starts", 100, 900, step=100),
+                "learning_starts": trial.suggest_int("learning_starts", 500, 1500, step=100),
                 "batch_size": trial.suggest_categorical("batch_size", [32, 64, 128]),
                 "gamma": trial.suggest_float("gamma", 0.95, 0.9999),
                 "train_freq": trial.suggest_categorical("train_freq", [1, 4, 8]),

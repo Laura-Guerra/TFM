@@ -130,19 +130,17 @@ class StockEnvironment(gymnasium.Env):
         # Reward com a % de canvi de net worth
         delta = (self.net_worth - self.previous_net_worth) / (self.previous_net_worth + 1e-8)
         reward = delta * 100
-
         self.previous_net_worth = self.net_worth
 
-
-        # Penalització per accions no efectives
+        # Penalització suau per accions no efectives
         ineffective = (
                 (action in [1, 2, 3] and self.balance < execution_price) or
                 (action in [4, 5, 6] and self.shares_held == 0)
         )
         if ineffective:
-            reward -= 0.5
+            reward -= 0.05  # abans era 0.5
 
-        # Penalització d'inacció
+        # Penalització suau per inacció repetida
         if not hasattr(self, "no_action_steps"):
             self.no_action_steps = 0
 
@@ -152,12 +150,12 @@ class StockEnvironment(gymnasium.Env):
             self.no_action_steps = 0
 
         if self.no_action_steps >= 10:
-            reward -= 1.0
+            reward -= 0.1  # abans era 1.0
 
-        # Penalització d'estabilitat de capital
-        if self.is_train:
-            if abs(reward) < 0.05:
-                reward -= 0.1
+        # Recompensa suau per tancar posicions amb guany
+        profit = self.net_worth - self.initial_balance
+        if action in [4, 5, 6] and profit > 0:
+            reward += 0.05
 
         # Log del pas actual
         self.history["step"].append(self.current_step)
