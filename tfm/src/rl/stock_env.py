@@ -256,6 +256,7 @@ class StockEnvironment(gymnasium.Env):
         Save the history of the simulation and computed metrics to a CSV and JSON file.
         """
         df_history = pd.DataFrame(self.history)
+        path.parent.mkdir(parents=True, exist_ok=True)
         df_history.to_csv(path, index=False)
         logger.info(f"✅ History saved to {path}")
 

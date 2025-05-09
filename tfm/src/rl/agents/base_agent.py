@@ -1,11 +1,16 @@
 
 import os
+from datetime import datetime
+
 from loguru import logger
 
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
+
+from tfm.src.config.settings import PATH_DATA_RESULTS
+
 
 class BaseAgent:
     def __init__(self, env, eval_env, model_dir: Path, log_dir: Path, params: dict, with_news: bool = False):
@@ -49,6 +54,7 @@ class BaseAgent:
         raise NotImplementedError("Subclasses must implement load method!")
 
     def evaluate(self, n_episodes: int = 5):
+        results_path = PATH_DATA_RESULTS / datetime.today().strftime("%Y-%m-%d")
         episode_rewards = []
         history_paths = []
 
@@ -65,8 +71,8 @@ class BaseAgent:
             episode_rewards.append(total_reward)
 
             # Guardar history per aquest episodi
-            episode_path = self.log_dir / f"episode_{episode + 1}.csv"
-            self.eval_env.save_history(episode_path)
+            episode_path = results_path / f"episode_{episode + 1}.csv"
+            self.eval_env.env.save_history(episode_path)
             history_paths.append(episode_path)
 
         # Guardar summary

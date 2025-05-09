@@ -12,13 +12,15 @@ class DQNAgent(BaseAgent):
     def __init__(self, env, eval_env, model_dir: Path, log_dir: Path, params: dict = None):
         super().__init__(env, eval_env, model_dir, log_dir, params or {})
 
-        logger.info("🔧 Instanciant model inicial amb paràmetres per defecte")
-        self.model = DQN(
-            policy="MlpPolicy",
-            env=self.env,
-            tensorboard_log=str(self.log_dir),
-            **self.params
-        )
+        # Només inicialitza el model si tenim un entorn (i per tant volem entrenar)
+        if self.env is not None:
+            logger.info("🔧 Instanciant model inicial amb paràmetres per defecte")
+            self.model = DQN(
+                policy="MlpPolicy",
+                env=self.env,
+                tensorboard_log=str(self.log_dir),
+                **self.params
+            )
 
     def optimize_hyperparameters(self, n_trials: int = 30, n_eval_episodes: int = 5):
         """
@@ -41,7 +43,6 @@ class DQNAgent(BaseAgent):
 
             logger.debug(f"🧪 Trial {trial.number}: {trial_params}")
 
-            # Entrenament ràpid
             model = DQN(
                 policy="MlpPolicy",
                 env=self.env,
@@ -59,14 +60,12 @@ class DQNAgent(BaseAgent):
         # Callback per mostrar millors resultats
         def log_callback(study: optuna.Study, trial: FrozenTrial):
             if study.best_trial == trial:
-                logger.info(f"🏅  Nou millor trial {trial.number}  →  "
-                            f"reward = {-trial.value:.2f}")
+                logger.info(f"🏅  Nou millor trial {trial.number}  →  reward = {-trial.value:.2f}")
 
         logger.info(f"🔍 Cerca d'hiperparàmetres ({n_trials} trials)…")
         study = optuna.create_study(direction="minimize")
         study.optimize(objective, n_trials=n_trials, callbacks=[log_callback])
 
-        # ── Guardem i reconstruïm el model amb els millors paràmetres ──
         self.params = study.best_params
         logger.success(f"✅ Millors hiperparàmetres trobats: {self.params}")
 
@@ -83,7 +82,7 @@ class DQNAgent(BaseAgent):
         Load a pre-trained model from a checkpoint.
         """
         logger.info(f"🔄 Carregant model des de {checkpoint_path}…")
-        self.model = DQN.load(checkpoint_path, env=self.env, tensorboard_log=str(self.log_dir) )
+        self.model = DQN.load(checkpoint_path, env=self.env, tensorboard_log=str(self.log_dir))
 
     def _evaluate_optuna_model(self, model, n_episodes: int = 5) -> float:
         """
