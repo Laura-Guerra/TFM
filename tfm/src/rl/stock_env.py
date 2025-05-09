@@ -21,6 +21,7 @@ class StockEnvironment(gymnasium.Env):
         continuous_actions: bool = False,
         model_name: str = "dqn",
         do_save_history: bool = False,
+        episode_length: int = 200,
         is_train = False
     ):
         super().__init__()
@@ -38,6 +39,7 @@ class StockEnvironment(gymnasium.Env):
         self.do_save_history = do_save_history
         self.today = date.today().strftime("%Y-%m-%d")
         self.is_train = is_train
+        self.episode_length = episode_length
 
         if is_train:
             logger.info("🔧 Instanciant entorn d'entrenament")
@@ -61,7 +63,10 @@ class StockEnvironment(gymnasium.Env):
         self.reset()
 
     def reset(self, seed=None, options=None):
-        self.current_step = 1
+        max_start = len(self.df) - self.episode_length - 1
+        self.current_step = np.random.randint(1, max_start)
+        self.start_step = self.current_step
+        self.current_step = np.random.randint(self.lookback_window_size, len(self.df) - 1)
         self.balance = self.initial_balance
         self.shares_held = 0.0
         self.net_worth = self.initial_balance
@@ -163,7 +168,7 @@ class StockEnvironment(gymnasium.Env):
         self.history["shares_held"].append(self.shares_held)
         self.history["reward"].append(reward)
 
-        terminated = self.current_step >= self.max_steps
+        terminated = self.current_step >= self.start_step + self.episode_length
         truncated  = bool(self.net_worth <= self.initial_balance * 0.15)
         if terminated or truncated:
             if self.episode_id % 10 == 0 and self.is_train:
@@ -236,19 +241,23 @@ class StockEnvironment(gymnasium.Env):
         df = pd.DataFrame(self.history)
         net_worth = df["net_worth"].values
         returns = np.diff(net_worth) / net_worth[:-1]
+        daily_rf = (1 + risk_free_rate) ** (1 / 252) - 1
 
-        sharpe = (returns.mean() - risk_free_rate) / (returns.std() + 1e-8) * np.sqrt(252)
+        sharpe = (returns.mean() - daily_rf) / returns.std() * np.sqrt(252)
         sortino = (returns.mean() - risk_free_rate) / (returns[returns < 0].std() + 1e-8) * np.sqrt(252)
         cum_max = np.maximum.accumulate(net_worth)
         drawdown = (net_worth - cum_max) / cum_max
         max_drawdown = drawdown.min()
         volatility = returns.std() * np.sqrt(252)
+        cumulative_return = net_worth[-1] / net_worth[0] - 1
+
 
         return {
             "Sharpe Ratio": sharpe,
             "Sortino Ratio": sortino,
             "Max Drawdown": max_drawdown,
-            "Volatility": volatility
+            "Volatility": volatility,
+            "Cumulative Return": cumulative_return,
         }
 
     def save_history(self, path: str):
