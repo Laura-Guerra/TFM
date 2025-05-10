@@ -22,9 +22,11 @@ class BaseAgent:
 
         self.model = None  # Defined in subclass
         self.model_name = self.__class__.__name__.replace("Agent", "").lower()
+        self.with_news = with_news
 
         self.model_dir.mkdir(parents=True, exist_ok=True)
         self.log_dir.mkdir(parents=True, exist_ok=True)
+
 
         if with_news:
             self.model_name += "_news"
@@ -54,7 +56,9 @@ class BaseAgent:
         raise NotImplementedError("Subclasses must implement load method!")
 
     def evaluate(self, n_episodes: int = 5):
-        results_path = PATH_DATA_RESULTS / datetime.today().strftime("%Y-%m-%d")
+        folder = f"{self.model_name}_without_news" if not self.with_news else f"{self.model_name}"
+        results_path = PATH_DATA_RESULTS / folder / datetime.today().strftime("%Y-%m-%d")
+        results_path.mkdir(parents=True, exist_ok=True)
         episode_rewards = []
         history_paths = []
 

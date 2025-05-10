@@ -16,7 +16,6 @@ from tfm.src.config.settings import (
 
 # %% 1. Carrega i separa les dades
 df = pd.read_csv(PATH_DATA_PROCESSED / "state_features.csv", parse_dates=["date"])
-df = df[df["ticker"] == "SPY"].reset_index(drop=True)
 
 cut_val  = pd.Timestamp(date(2021, 12, 31))   # train ≤ 31‑12‑2021
 cut_test = pd.Timestamp(date(2023, 12, 31))   # val ≤ 31‑12‑2023

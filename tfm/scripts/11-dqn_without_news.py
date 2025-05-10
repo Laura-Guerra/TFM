@@ -47,7 +47,7 @@ model_dir.mkdir(parents=True, exist_ok=True)
 
 # %% 4. Busca hiperparàmetres
 agent_tune = DQNAgent(train_env, val_env, model_dir, log_dir)
-best_params = agent_tune.optimize_hyperparameters(n_trials=2, n_eval_episodes=5)
+best_params = agent_tune.optimize_hyperparameters(n_trials=20, n_eval_episodes=5)
 
 with (model_dir / "best_params_to_delete.json").open("w") as f:
     json.dump(best_params, f, indent=2)
