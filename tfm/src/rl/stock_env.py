@@ -53,10 +53,18 @@ class StockEnvironment(gymnasium.Env):
         self.balance = self.initial_balance
         self.shares_held = [0] * self.n_assets
         self.previous_net_worth = self.initial_balance
+        self.steps_without_positions = 0
+        self.asset_usage_counter = [0] * self.n_assets
+
 
         self.history = {
-            "step": [], "date": [], "balance": [], "net_worth": [], "reward": [],
-            "shares_held_1": [], "shares_held_2": [], "action_vector": []
+            "step": [],
+            "date": [],
+            "balance": [],
+            "net_worth": [],
+            "reward": [],
+            "action_vector": [],
+            "shares_held_vector": []  # 🔁 afegim això
         }
 
         return self._get_obs(), {}
@@ -74,7 +82,6 @@ class StockEnvironment(gymnasium.Env):
 
     def step(self, action):
         actions = self.decode_action(int(action))
-        reward = 0.0
         ineffective_actions = 0
 
         # Mapeig de proporcions segons acció
@@ -106,16 +113,14 @@ class StockEnvironment(gymnasium.Env):
 
             if act in [1, 2, 3]:  # buy
                 self._buy_fixed_cash(i, price, cash_allocations[i])
+                if self.shares_held[i] == before:
+                    ineffective_actions += 1
             elif act in [4, 5, 6]:  # sell
                 proportion = {4: 0.25, 5: 0.5, 6: 1.0}[act]
                 self._sell(i, price, proportion)
+                if self.shares_held[i] == before:
+                    ineffective_actions += 1
 
-            if self.shares_held[i] == before:
-                ineffective_actions += 1
-
-        reward -= 0.25 * ineffective_actions
-        diversity_bonus = -abs(self.shares_held[0] - self.shares_held[1]) * 0.0005
-        reward += diversity_bonus
 
         self.current_step += 1
         net_worth = self.balance
@@ -123,18 +128,29 @@ class StockEnvironment(gymnasium.Env):
             close_price = self.df.iloc[self.current_step * self.n_assets + i]["Close"]
             net_worth += self.shares_held[i] * close_price
 
-        delta = (net_worth - self.previous_net_worth) / (self.previous_net_worth + 1e-8)
-        reward = delta * 100
-        self.previous_net_worth = net_worth
 
+        # Control de posicions obertes
+        if sum(self.shares_held) == 0:
+            self.steps_without_positions += 1
+        else:
+            self.steps_without_positions = 0
+
+        # Registra ús per actiu
+        for i, s in enumerate(self.shares_held):
+            if s > 0:
+                self.asset_usage_counter[i] += 1
+
+        # Calcular recompensa total
+        reward = self._compute_reward(net_worth, ineffective_actions)
+
+        self.previous_net_worth = net_worth
         shares_snapshot = self.shares_held.copy()
         self.history["step"].append(self.current_step)
         self.history["date"].append(self.df.iloc[self.current_step * self.n_assets]["date"])
         self.history["balance"].append(self.balance)
         self.history["net_worth"].append(net_worth)
         self.history["reward"].append(reward)
-        self.history["shares_held_1"].append(shares_snapshot[0])
-        self.history["shares_held_2"].append(shares_snapshot[1])
+        self.history["shares_held_vector"].append(shares_snapshot.copy())
         self.history["action_vector"].append(actions)
 
         terminated = self.current_step >= self.start_step + self.episode_length
@@ -166,32 +182,18 @@ class StockEnvironment(gymnasium.Env):
             self.balance -= cost
             self.shares_held[i] += shares
 
-    def _apply_discrete_action(self, i, price, action):
-        if action == 1:
-            self._buy(i, price, 0.25)
-        elif action == 2:
-            self._buy(i, price, 0.5)
-        elif action == 3:
-            self._buy(i, price, 0.75)
-        elif action == 4:
-            self._sell(i, price, 0.25)
-        elif action == 5:
-            self._sell(i, price, 0.5)
-        elif action == 6:
-            self._sell(i, price, 1.0)
+    def _compute_reward(self, net_worth, ineffective_actions: int):
+        # 1. Recompensa base: guany relatiu (%)
+        delta = (net_worth - self.previous_net_worth) / (self.previous_net_worth + 1e-8)
+        reward = delta * 100
 
-    def _buy(self, i, price, proportion):
-        # Calcular proporció sobre el balanç restant (ja actualitzat)
-        if self.balance <= 0:
-            return  # No es pot comprar res si no tens saldo
+        # 2. Penalització si no té cap acció en cartera
+        reward += 0.5 if sum(self.shares_held) > 0 else -1.0
 
-        cash = self.balance * proportion
-        shares = int(cash // price)
-        total_cost = shares * price
+        # 3. Penalització per accions ineficaces (compres o vendes sense efecte)
+        reward -= 0.25 * ineffective_actions
 
-        if shares > 0 and total_cost <= self.balance:
-            self.balance -= total_cost
-            self.shares_held[i] += shares
+        return reward
 
     def _sell(self, i, price, proportion):
         shares = int(self.shares_held[i] * proportion)
