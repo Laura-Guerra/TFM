@@ -15,7 +15,7 @@ from tfm.src.config.settings import (
 
 
 # %% 1. Carrega i separa les dades
-df = pd.read_csv(PATH_DATA_PROCESSED / "state_features.csv", parse_dates=["date"])
+df = pd.read_csv(PATH_DATA_PROCESSED / "state_features.csv", parse_dates=["date"]).sort_values(["date", "ticker"])
 
 cut_val  = pd.Timestamp(date(2021, 12, 31))   # train ≤ 31‑12‑2021
 cut_test = pd.Timestamp(date(2023, 12, 31))   # val ≤ 31‑12‑2023
@@ -41,7 +41,7 @@ model_dir.mkdir(parents=True, exist_ok=True)
 
 # %% 4. Busca hiperparàmetres
 agent_tune = DQNAgent(train_env, val_env, model_dir, log_dir)
-best_params = agent_tune.optimize_hyperparameters(n_trials=25, n_eval_episodes=5)
+best_params = agent_tune.optimize_hyperparameters(n_trials=20, n_eval_episodes=10)
 
 with (model_dir / "best_params_to_delete.json").open("w") as f:
     json.dump(best_params, f, indent=2)
