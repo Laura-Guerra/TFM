@@ -71,13 +71,13 @@ class StockEnvironment(gymnasium.Env):
 
 
         self.history = {
-            "step": [],
-            "date": [],
-            "balance": [],
-            "net_worth": [],
-            "reward": [],
-            "action_vector": [],
-            "shares_held_vector": []  # 🔁 afegim això
+            "step": [self.start_step],
+            "date": [self.df.iloc[self.start_step * self.n_assets]["date"]],
+            "balance": [self.initial_balance],
+            "net_worth": [self.initial_balance],
+            "reward": [0],
+            "action_vector": [[]],
+            "shares_held_vector": [self.shares_held.copy()]  # 🔁 afegim això
         }
 
         return self._get_obs(), {}
@@ -95,7 +95,6 @@ class StockEnvironment(gymnasium.Env):
 
     def step(self, action):
         actions = self.decode_action(int(action))
-        ineffective_actions = 0
 
         def get_buy_proportion(act):
             return {1: 0.25, 2: 0.5, 3: 0.75}.get(act, 0.0)
@@ -111,13 +110,10 @@ class StockEnvironment(gymnasium.Env):
 
             if act in [1, 2, 3]:  # buy
                 self._buy_fixed_cash(i, price, cash_allocations[i])
-                if self.shares_held[i] == before:
-                    ineffective_actions += 1
+
             elif act in [4, 5, 6]:  # sell
                 proportion = {4: 0.25, 5: 0.5, 6: 1.0}[act]
                 self._sell(i, price, proportion)
-                if self.shares_held[i] == before:
-                    ineffective_actions += 1
 
         self.current_step += 1
         net_worth = self.balance
@@ -134,7 +130,7 @@ class StockEnvironment(gymnasium.Env):
             if s > 0:
                 self.asset_usage_counter[i] += 1
 
-        reward = self._compute_reward(net_worth, ineffective_actions)
+        reward = self._compute_reward(net_worth)
         self.previous_net_worth = net_worth
 
         shares_snapshot = self.shares_held.copy()
@@ -175,44 +171,36 @@ class StockEnvironment(gymnasium.Env):
             self.balance -= cost
             self.shares_held[i] += shares
 
-    def _compute_reward(self, net_worth, ineffective_actions: int):
-        # Guany relatiu
+    def _compute_reward(self, net_worth):
+        # Premi base pel canvi absolut del patrimoni net
         reward = net_worth - self.previous_net_worth
 
-        # Penalització si no té accions
-        reward += 0.5 if sum(self.shares_held) > 0 else -1.0
+        # Penalització per ocasions perdudes
+        missed_penalty = 0.0
+        penalty_scale = 100.0  # Penalització proporcional al canvi de preu si es perd una oportunitat clara
+        threshold = 0.01  # Canvi del 1%
 
-        # Diversificació: premi proporcional
-        n_actius_amb_posicions = sum(1 for s in self.shares_held if s > 0)
-        reward += (n_actius_amb_posicions / self.n_assets) * 0.75
+        if self.current_step > 1 and self.history["action_vector"]:
+            try:
+                last_actions = self.history["action_vector"][-1]
 
-        # Penalització per accions ineficaces
-        reward -= 0.75 * ineffective_actions
+                for i in range(self.n_assets):
+                    prev_price = self.df.iloc[(self.current_step - 1) * self.n_assets + i]["Close"]
+                    curr_price = self.df.iloc[self.current_step * self.n_assets + i]["Close"]
+                    price_change = (curr_price - prev_price) / (prev_price + 1e-8)
+                    action = last_actions[i]
 
-        # Penalització per inactivitat
-        if not hasattr(self, "steps_since_last_trade"):
-            self.steps_since_last_trade = 0
+                    # Penalització per no comprar quan el preu ha caigut ≥ 1% i es pot fer
+                    if price_change <= -threshold and self.balance > 0.25 * curr_price and action not in [1, 2, 3]:
+                        missed_penalty += abs(price_change) * penalty_scale
 
-        if ineffective_actions == self.n_assets:
-            self.steps_since_last_trade += 1
-        else:
-            self.steps_since_last_trade = 0
+                    # Penalització per no vendre quan el preu ha pujat ≥ 1% i es tenen accions
+                    if price_change >= threshold and self.shares_held[i] > 0 and action not in [4, 5, 6]:
+                        missed_penalty += abs(price_change) * penalty_scale
+            except IndexError:
+                pass  # Per seguretat, en cas que no hi hagi accions encara
 
-        if self.steps_since_last_trade >= 10:
-            reward -= 2.0
-
-        # 💥 Penalització molt forta si no té cap acció durant 2 passos seguits
-        if not hasattr(self, "consecutive_no_position_steps"):
-            self.consecutive_no_position_steps = 0
-
-        if sum(self.shares_held) == 0:
-            self.consecutive_no_position_steps += 1
-        else:
-            self.consecutive_no_position_steps = 0
-
-        if self.consecutive_no_position_steps >= 2:
-            reward -= 5.0
-
+        reward -= missed_penalty
         return reward
 
     def _sell(self, i, price, proportion):
@@ -224,7 +212,7 @@ class StockEnvironment(gymnasium.Env):
     def render(self, mode="human"):
         logger.info(f"Step {self.current_step} | Balance: {self.balance:.2f} | Net Worth: {self.previous_net_worth:.2f} | Holdings: {self.shares_held}")
 
-    def compute_metrics(self, risk_free_rate: float = 0.02) -> dict:
+    def _compute_metrics(self, risk_free_rate: float = 0.02) -> dict:
         df = pd.DataFrame(self.history)
         net_worth = df["net_worth"].values
         returns = np.diff(net_worth) / net_worth[:-1]
@@ -250,7 +238,7 @@ class StockEnvironment(gymnasium.Env):
         path.parent.mkdir(parents=True, exist_ok=True)
         df_history.to_csv(path, index=False)
         logger.info(f"✅ History saved to {path}")
-        metrics = self.compute_metrics()
+        metrics = self._compute_metrics()
         metrics_path = path.with_suffix(".json")
         with open(metrics_path, "w") as f:
             json.dump(metrics, f, indent=2)
