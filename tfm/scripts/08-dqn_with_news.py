@@ -27,7 +27,6 @@ df_test  = df[df["date"] > cut_test].copy()
 assert not df_val.empty and not df_test.empty, "⚠️ Val o test està buit!"
 
 # %% 2. Entorns
-MAX_STEPS = 1_000
 train_env = Monitor(StockEnvironment(df_train, 50_000, False))
 val_env   = Monitor(StockEnvironment(df_val,   50_000, False))
 
@@ -43,7 +42,7 @@ model_dir.mkdir(parents=True, exist_ok=True)
 agent_tune = DQNAgent(train_env, val_env, model_dir, log_dir)
 best_params = agent_tune.optimize_hyperparameters(n_trials=20, n_eval_episodes=10)
 
-with (model_dir / "best_params_to_delete.json").open("w") as f:
+with (model_dir / "best_params.json").open("w") as f:
     json.dump(best_params, f, indent=2)
 
 # %% 5. Entrenament final (train + val)
@@ -55,7 +54,7 @@ full_env = Monitor(full_train_env_raw)
 test_env = Monitor(test_env_raw)
 
 agent = DQNAgent(full_env, test_env, model_dir, log_dir, params=best_params)
-agent.train(total_timesteps=500_000)
+agent.train(total_timesteps=300_000)
 agent.save("dqn_final")
 
 # 6. Desa historial complet

@@ -103,7 +103,7 @@ class DQNAgent(BaseAgent):
 
             while not done:
                 try:
-                    action, _ = model.predict(obs, deterministic=False)
+                    action, _ = model.predict(obs, deterministic=True)
                     obs, reward, terminated, truncated, _ = self.eval_env.step(action)
                     total_reward += reward
                     done = terminated or truncated

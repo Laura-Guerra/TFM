@@ -33,7 +33,7 @@ class StockEnvironment(gymnasium.Env):
         self.best_episode = None
         self.worse_episode = None
 
-        self.action_set = list(product(range(7), repeat=self.n_assets))
+        self.action_set = self.action_set = self._valid_action_set()
         self.action_space = spaces.Discrete(len(self.action_set))
 
         self.feature_columns = [col for col in self.df.columns if col not in ["date", "ticker", "Open"]]
@@ -45,6 +45,19 @@ class StockEnvironment(gymnasium.Env):
         )
 
         self.reset()
+
+    def _valid_action_set(self):
+        all_actions = list(product(range(7), repeat=self.n_assets))
+
+        def compra_proportion(a):
+            val = {0: 0.0, 1: 0.25, 2: 0.5, 3: 0.75, 4: 0.0, 5: 0.0, 6: 0.0}
+            return val[a]
+
+        valid_actions = [
+            action for action in all_actions
+            if sum(compra_proportion(a) for a in action) <= 1.0
+        ]
+        return valid_actions
 
     def reset(self, seed=None, options=None):
         self.max_steps = len(self.df) // self.n_assets - 1
@@ -84,26 +97,11 @@ class StockEnvironment(gymnasium.Env):
         actions = self.decode_action(int(action))
         ineffective_actions = 0
 
-        # Mapeig de proporcions segons acció
-        raw_proportions = []
-        for act in actions:
-            if act == 1:
-                raw_proportions.append(0.25)
-            elif act == 2:
-                raw_proportions.append(0.5)
-            elif act == 3:
-                raw_proportions.append(0.75)
-            else:
-                raw_proportions.append(0.0)
+        def get_buy_proportion(act):
+            return {1: 0.25, 2: 0.5, 3: 0.75}.get(act, 0.0)
 
-        # Normalització si superen 100%
-        total_prop = sum(raw_proportions)
-        if total_prop > 1.0:
-            raw_proportions = [p / total_prop for p in raw_proportions]
-
-        # Fixem el cash inicial i preparem la quantitat exacta per actiu
-        total_cash = self.balance
-        cash_allocations = [total_cash * p for p in raw_proportions]
+        # Calcula el cash a utilitzar per cada acció de compra
+        cash_allocations = [self.balance * get_buy_proportion(act) for act in actions]
 
         for i in range(self.n_assets):
             row = self.df.iloc[self.current_step * self.n_assets + i]
@@ -121,29 +119,24 @@ class StockEnvironment(gymnasium.Env):
                 if self.shares_held[i] == before:
                     ineffective_actions += 1
 
-
         self.current_step += 1
         net_worth = self.balance
         for i in range(self.n_assets):
             close_price = self.df.iloc[self.current_step * self.n_assets + i]["Close"]
             net_worth += self.shares_held[i] * close_price
 
-
-        # Control de posicions obertes
         if sum(self.shares_held) == 0:
             self.steps_without_positions += 1
         else:
             self.steps_without_positions = 0
 
-        # Registra ús per actiu
         for i, s in enumerate(self.shares_held):
             if s > 0:
                 self.asset_usage_counter[i] += 1
 
-        # Calcular recompensa total
         reward = self._compute_reward(net_worth, ineffective_actions)
-
         self.previous_net_worth = net_worth
+
         shares_snapshot = self.shares_held.copy()
         self.history["step"].append(self.current_step)
         self.history["date"].append(self.df.iloc[self.current_step * self.n_assets]["date"])
@@ -183,15 +176,42 @@ class StockEnvironment(gymnasium.Env):
             self.shares_held[i] += shares
 
     def _compute_reward(self, net_worth, ineffective_actions: int):
-        # 1. Recompensa base: guany relatiu (%)
-        delta = (net_worth - self.previous_net_worth) / (self.previous_net_worth + 1e-8)
-        reward = delta * 100
+        # Guany relatiu
+        reward = net_worth - self.previous_net_worth
 
-        # 2. Penalització si no té cap acció en cartera
+        # Penalització si no té accions
         reward += 0.5 if sum(self.shares_held) > 0 else -1.0
 
-        # 3. Penalització per accions ineficaces (compres o vendes sense efecte)
-        reward -= 0.25 * ineffective_actions
+        # Diversificació: premi proporcional
+        n_actius_amb_posicions = sum(1 for s in self.shares_held if s > 0)
+        reward += (n_actius_amb_posicions / self.n_assets) * 0.75
+
+        # Penalització per accions ineficaces
+        reward -= 0.75 * ineffective_actions
+
+        # Penalització per inactivitat
+        if not hasattr(self, "steps_since_last_trade"):
+            self.steps_since_last_trade = 0
+
+        if ineffective_actions == self.n_assets:
+            self.steps_since_last_trade += 1
+        else:
+            self.steps_since_last_trade = 0
+
+        if self.steps_since_last_trade >= 10:
+            reward -= 2.0
+
+        # 💥 Penalització molt forta si no té cap acció durant 2 passos seguits
+        if not hasattr(self, "consecutive_no_position_steps"):
+            self.consecutive_no_position_steps = 0
+
+        if sum(self.shares_held) == 0:
+            self.consecutive_no_position_steps += 1
+        else:
+            self.consecutive_no_position_steps = 0
+
+        if self.consecutive_no_position_steps >= 2:
+            reward -= 5.0
 
         return reward
 
