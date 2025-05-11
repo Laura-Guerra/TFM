@@ -13,7 +13,7 @@ from tfm.src.config.settings import PATH_DATA_RESULTS
 
 
 class BaseAgent:
-    def __init__(self, env, eval_env, model_dir: Path, log_dir: Path, params: dict, with_news: bool = False):
+    def __init__(self, env, eval_env, model_dir: Path, log_dir: Path, params: dict, with_news: bool = True):
         self.env = env
         self.eval_env = eval_env
         self.model_dir = model_dir
@@ -43,9 +43,12 @@ class BaseAgent:
             name_prefix=self.model_name
         )
 
+        early_stop = EarlyStoppingCallback(patience=10, min_delta=1_000, warmup_episodes=50)
+
+
         self.model.learn(
             total_timesteps=total_timesteps,
-            callback=[checkpoint_callback]
+            callback=[checkpoint_callback, early_stop]
         )
 
     def save(self, filename: str = None):
@@ -101,3 +104,46 @@ class BaseAgent:
 
     def optimize_hyperparameters(self):
         raise NotImplementedError("Optuna optimization to be implemented!")
+
+
+from stable_baselines3.common.callbacks import BaseCallback
+from collections import deque
+import numpy as np
+
+class EarlyStoppingCallback(BaseCallback):
+    def __init__(self, patience=10, min_delta=0.0, warmup_episodes=10, verbose=1):
+        super().__init__(verbose)
+        self.patience = patience
+        self.min_delta = min_delta
+        self.warmup = warmup_episodes
+        self.counter = 0
+        self.best_score = -np.inf
+        self.rewards = deque(maxlen=100)
+        self.episode_num = 0
+
+    def _on_step(self) -> bool:
+        # Només actua al final d’un episodi
+        if self.locals.get("done", False):
+            self.episode_num += 1
+            reward = self.locals.get("rewards", 0.0)
+            self.rewards.append(reward)
+
+            if self.episode_num <= self.warmup:
+                return True  # No parar durant el warmup
+
+            moving_avg = np.mean(self.rewards)
+
+            if moving_avg > self.best_score + self.min_delta:
+                self.best_score = moving_avg
+                self.counter = 0
+            else:
+                self.counter += 1
+
+            if self.verbose > 0:
+                print(f"🔎 EarlyStopping: avg_reward={moving_avg:.2f}, best={self.best_score:.2f}, patience={self.counter}/{self.patience}")
+
+            if self.counter >= self.patience:
+                print("🛑 Early stopping triggered.")
+                return False  # Atura entrenament
+
+        return True
