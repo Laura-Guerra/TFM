@@ -11,8 +11,7 @@ from tfm.src.config.settings import (
 )
 
 # %% 1. Carrega i separa les dades
-df = pd.read_csv(PATH_DATA_PROCESSED / "state_features.csv", parse_dates=["date"])
-df = df[df["ticker"] == "SPY"].reset_index(drop=True)
+df = pd.read_csv(PATH_DATA_PROCESSED / "state_features.csv", parse_dates=["date"]).sort_values(["date", "ticker"])
 
 cut_val  = pd.Timestamp(date(2021, 12, 31))
 cut_test = pd.Timestamp(date(2023, 12, 31))
@@ -28,7 +27,7 @@ test_env_raw = StockEnvironment(df_test, 50_000, False, do_save_history=True)
 test_env = Monitor(test_env_raw)
 
 # %% 3. Defineix carpeta del model entrenat el 05-05
-run_name = "dqn_spy_2025-05-05"
+run_name = "dqn_spy_2025-05-11"
 model_dir = PATH_DATA_MODELS / run_name
 log_dir = PATH_DATA_LOGS / run_name
 log_dir.mkdir(parents=True, exist_ok=True)

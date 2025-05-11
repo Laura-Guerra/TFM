@@ -46,7 +46,7 @@ with (model_dir / "best_params.json").open("w") as f:
     json.dump(best_params, f, indent=2)
 
 # %% 5. Entrenament final (train + val)
-df_train_full = pd.concat([df_train, df_val]).sort_values("date")
+df_train_full = pd.concat([df_train, df_val]).sort_values(["date", "ticker"])
 
 full_train_env_raw = StockEnvironment(df_train_full, 50_000, False, is_train=True)
 test_env_raw = StockEnvironment(df_test, 50_000, False, do_save_history=True)
@@ -54,7 +54,7 @@ full_env = Monitor(full_train_env_raw)
 test_env = Monitor(test_env_raw)
 
 agent = DQNAgent(full_env, test_env, model_dir, log_dir, params=best_params)
-agent.train(total_timesteps=300_000)
+agent.train(total_timesteps=500_000)
 agent.save("dqn_final")
 
 # 6. Desa historial complet
