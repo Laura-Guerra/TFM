@@ -43,12 +43,8 @@ class BaseAgent:
             name_prefix=self.model_name
         )
 
-        early_stop = EarlyStoppingCallback(patience=10, min_delta=1_000, warmup_episodes=50)
-
-
         self.model.learn(
             total_timesteps=total_timesteps,
-            callback=[checkpoint_callback, early_stop]
         )
 
     def save(self, filename: str = None):
