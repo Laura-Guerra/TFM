@@ -1,4 +1,3 @@
-
 import json
 from datetime import date
 from pathlib import Path
@@ -33,8 +32,11 @@ class StockEnvironment(gymnasium.Env):
         self.best_episode = None
         self.worse_episode = None
 
-        self.action_set = self.action_set = self._valid_action_set()
-        self.action_space = spaces.Discrete(len(self.action_set))
+        if self.continuous_actions:
+            self.action_space = spaces.Box(low=-1, high=1, shape=(self.n_assets,), dtype=np.float32)
+        else:
+            self.action_set = self._valid_action_set()
+            self.action_space = spaces.Discrete(len(self.action_set))
 
         self.feature_columns = [col for col in self.df.columns if col not in ["date", "ticker", "Open"]]
         self.observation_space = spaces.Box(
@@ -69,7 +71,6 @@ class StockEnvironment(gymnasium.Env):
         self.steps_without_positions = 0
         self.asset_usage_counter = [0] * self.n_assets
 
-
         self.history = {
             "step": [self.start_step],
             "date": [self.df.iloc[self.start_step * self.n_assets]["date"]],
@@ -94,27 +95,60 @@ class StockEnvironment(gymnasium.Env):
         return list(self.action_set[action_idx])
 
     def step(self, action):
-        actions = self.decode_action(int(action))
+        if self.continuous_actions:
+            # --- ACCIONS CONTÍNUES ---
+            actions = np.clip(action, -1, 1)  # assegura accions dins [-1, 1]
 
-        def get_buy_proportion(act):
-            return {1: 0.25, 2: 0.5, 3: 0.75}.get(act, 0.0)
+            # Calcular proporcions de compra
+            buy_props = np.clip(actions, 0, 1)
+            total_buy_prop = np.sum(buy_props)
+            if total_buy_prop > 1.0:
+                buy_props = buy_props / total_buy_prop  # normalitza per evitar sobreassignació
 
-        # Calcula el cash a utilitzar per cada acció de compra
-        cash_allocations = [self.balance * get_buy_proportion(act) for act in actions]
+            # Compres
+            for i in range(self.n_assets):
+                row = self.df.iloc[self.current_step * self.n_assets + i]
+                price = row["Open"]
+                prop = buy_props[i]
+                if prop > 0:
+                    cash = self.balance * prop
+                    self._buy_fixed_cash(i, price, cash)
 
-        for i in range(self.n_assets):
-            row = self.df.iloc[self.current_step * self.n_assets + i]
-            price = row["Open"]
-            act = actions[i]
-            before = self.shares_held[i]
+            # Vendes
+            for i in range(self.n_assets):
+                row = self.df.iloc[self.current_step * self.n_assets + i]
+                price = row["Open"]
+                sell_prop = -min(actions[i], 0.0)  # només si < 0
+                if sell_prop > 0:
+                    self._sell(i, price, sell_prop)
 
-            if act in [1, 2, 3]:  # buy
-                self._buy_fixed_cash(i, price, cash_allocations[i])
+            actions_record = actions.tolist()
 
-            elif act in [4, 5, 6]:  # sell
-                proportion = {4: 0.25, 5: 0.5, 6: 1.0}[act]
-                self._sell(i, price, proportion)
+        else:
+            # --- ACCIONS DISCRETES ---
+            actions = self.decode_action(int(action))
 
+            def get_buy_proportion(act):
+                return {1: 0.25, 2: 0.5, 3: 0.75}.get(act, 0.0)
+
+            # Calcula el cash a utilitzar per cada acció de compra
+            cash_allocations = [self.balance * get_buy_proportion(act) for act in actions]
+
+            for i in range(self.n_assets):
+                row = self.df.iloc[self.current_step * self.n_assets + i]
+                price = row["Open"]
+                act = actions[i]
+
+                if act in [1, 2, 3]:  # buy
+                    self._buy_fixed_cash(i, price, cash_allocations[i])
+
+                elif act in [4, 5, 6]:  # sell
+                    proportion = {4: 0.25, 5: 0.5, 6: 1.0}[act]
+                    self._sell(i, price, proportion)
+
+            actions_record = actions
+
+        # ✅ Post-acció
         self.current_step += 1
         net_worth = self.balance
         for i in range(self.n_assets):
@@ -133,14 +167,13 @@ class StockEnvironment(gymnasium.Env):
         reward = self._compute_reward(net_worth)
         self.previous_net_worth = net_worth
 
-        shares_snapshot = self.shares_held.copy()
         self.history["step"].append(self.current_step)
         self.history["date"].append(self.df.iloc[self.current_step * self.n_assets]["date"])
         self.history["balance"].append(self.balance)
         self.history["net_worth"].append(net_worth)
         self.history["reward"].append(reward)
-        self.history["shares_held_vector"].append(shares_snapshot.copy())
-        self.history["action_vector"].append(actions)
+        self.history["shares_held_vector"].append(self.shares_held.copy())
+        self.history["action_vector"].append(actions_record)
 
         terminated = self.current_step >= self.start_step + self.episode_length
         truncated = net_worth <= self.initial_balance * 0.15
@@ -150,8 +183,6 @@ class StockEnvironment(gymnasium.Env):
                 logger.info(
                     f"Episode {self.episode_id} finished at {self.current_step} after {self.current_step - self.start_step} steps")
             if self.do_save_history:
-                self.save_history(
-                    PATH_DATA_RESULTS / f"{self.model_name}/" / f"{self.today}_{self.model_name}_episode_{self.episode_id}.csv")
                 if net_worth < self.min_reward:
                     self.min_reward = net_worth
                     self.worse_episode = self.episode_id
@@ -210,7 +241,8 @@ class StockEnvironment(gymnasium.Env):
             self.balance += shares * price
 
     def render(self, mode="human"):
-        logger.info(f"Step {self.current_step} | Balance: {self.balance:.2f} | Net Worth: {self.previous_net_worth:.2f} | Holdings: {self.shares_held}")
+        logger.info(
+            f"Step {self.current_step} | Balance: {self.balance:.2f} | Net Worth: {self.previous_net_worth:.2f} | Holdings: {self.shares_held}")
 
     def _compute_metrics(self, risk_free_rate: float = 0.02) -> dict:
         df = pd.DataFrame(self.history)

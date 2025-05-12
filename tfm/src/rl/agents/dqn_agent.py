@@ -10,7 +10,7 @@ from tfm.src.rl.agents.base_agent import BaseAgent
 
 class DQNAgent(BaseAgent):
     def __init__(self, env, eval_env, model_dir: Path, log_dir: Path, params: dict = None):
-        super().__init__(env, eval_env, model_dir, log_dir, params or {})
+        super().__init__(env, eval_env, params or {})
 
         # Només inicialitza el model si tenim un entorn (i per tant volem entrenar)
         if self.env is not None:
@@ -18,7 +18,6 @@ class DQNAgent(BaseAgent):
             self.model = DQN(
                 policy="MlpPolicy",
                 env=self.env,
-                tensorboard_log=str(self.log_dir),
                 **self.params
             )
 
@@ -46,7 +45,6 @@ class DQNAgent(BaseAgent):
             model = DQN(
                 policy="MlpPolicy",
                 env=self.env,
-                tensorboard_log=str(self.log_dir),
                 **trial_params
             )
             model.learn(total_timesteps=20_000, progress_bar=False)
@@ -72,7 +70,6 @@ class DQNAgent(BaseAgent):
         self.model = DQN(
             policy="MlpPolicy",
             env=self.env,
-            tensorboard_log=str(self.log_dir),
             **self.params
         )
         return self.params
@@ -82,7 +79,7 @@ class DQNAgent(BaseAgent):
         Load a pre-trained model from a checkpoint.
         """
         logger.info(f"🔄 Carregant model des de {checkpoint_path}…")
-        self.model = DQN.load(checkpoint_path, env=self.env, tensorboard_log=str(self.log_dir))
+        self.model = DQN.load(checkpoint_path, env=self.env)
 
     def _evaluate_optuna_model(self, model, n_episodes: int = 5) -> float:
         """

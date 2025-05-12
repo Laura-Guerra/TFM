@@ -10,14 +10,13 @@ from tfm.src.rl.agents.base_agent import BaseAgent
 
 class PPOAgent(BaseAgent):
     def __init__(self, env, eval_env, model_dir: Path, log_dir: Path, params: dict = None):
-        super().__init__(env, eval_env, model_dir, log_dir, params or {})
+        super().__init__(env, eval_env, params or {})
 
         if self.env is not None:
             logger.info("🔧 Instanciant model PPO inicial amb paràmetres per defecte")
             self.model = PPO(
                 policy="MlpPolicy",
                 env=self.env,
-                tensorboard_log=str(self.log_dir),
                 **self.params
             )
 
@@ -37,7 +36,6 @@ class PPOAgent(BaseAgent):
             model = PPO(
                 policy="MlpPolicy",
                 env=self.env,
-                tensorboard_log=str(self.log_dir),
                 **trial_params
             )
 
@@ -61,14 +59,13 @@ class PPOAgent(BaseAgent):
         self.model = PPO(
             policy="MlpPolicy",
             env=self.env,
-            tensorboard_log=str(self.log_dir),
             **self.params
         )
         return self.params
 
     def load(self, checkpoint_path: str, total_timesteps: int = 100_000):
         logger.info(f"🔄 Carregant model PPO des de {checkpoint_path}…")
-        self.model = PPO.load(checkpoint_path, env=self.env, tensorboard_log=str(self.log_dir))
+        self.model = PPO.load(checkpoint_path, env=self.env)
 
     def _evaluate_model(self, model, n_episodes: int = 5) -> float:
         rewards = []

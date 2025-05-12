@@ -9,14 +9,13 @@ from tfm.src.rl.agents.base_agent import BaseAgent
 
 
 class SACAgent(BaseAgent):
-    def __init__(self, env, eval_env, model_dir: Path, log_dir: Path, params: dict = None):
-        super().__init__(env, eval_env, model_dir, log_dir, params or {})
+    def __init__(self, env, eval_env, params: dict = None):
+        super().__init__(env, eval_env, params or {})
 
         logger.info("🔧 Instanciant model inicial amb paràmetres per defecte")
         self.model = SAC(
             policy="MlpPolicy",
             env=self.env,
-            tensorboard_log=str(self.log_dir),
             **self.params
         )
 
@@ -41,7 +40,6 @@ class SACAgent(BaseAgent):
             model = SAC(
                 policy="MlpPolicy",
                 env=self.env,
-                tensorboard_log=str(self.log_dir),
                 **trial_params
             )
             model.learn(total_timesteps=20_000, progress_bar=False)
@@ -65,14 +63,13 @@ class SACAgent(BaseAgent):
         self.model = SAC(
             policy="MlpPolicy",
             env=self.env,
-            tensorboard_log=str(self.log_dir),
             **self.params
         )
         return self.params
 
     def load(self, checkpoint_path: str, total_timesteps: int = 100_000):
         logger.info(f"🔄 Carregant model des de {checkpoint_path}…")
-        self.model = SAC.load(checkpoint_path, env=self.env, tensorboard_log=str(self.log_dir))
+        self.model = SAC.load(checkpoint_path, env=self.env)
 
     def _evaluate_optuna_model(self, model, n_episodes: int = 5) -> float:
         rewards = []
