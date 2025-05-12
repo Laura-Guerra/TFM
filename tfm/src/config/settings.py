@@ -18,7 +18,7 @@ PATH_DATA_RAW = ROOT_DIR / "tfm" / "data" / "raw"
 PATH_DATA_PROCESSED = ROOT_DIR / "tfm" / "data" / "processed"
 PATH_DATA_LOGS = ROOT_DIR / "tfm" / "data" / "logs"
 PATH_DATA_RESULTS = ROOT_DIR / "tfm" / "data" / "results"
-PATH_DATA_MODELS = ROOT_DIR / "tfm" / "data" / "results" / "models"
+PATH_DATA_MODELS = ROOT_DIR / "tfm" / "data" / "models"
 
 
 
