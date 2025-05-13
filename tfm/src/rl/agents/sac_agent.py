@@ -9,8 +9,8 @@ from tfm.src.rl.agents.base_agent import BaseAgent
 
 
 class SACAgent(BaseAgent):
-    def __init__(self, env, eval_env, params: dict = None):
-        super().__init__(env, eval_env, params or {})
+    def __init__(self, env, eval_env, continuos_actions= False, params: dict = None, with_news: bool = True, date: str = None):
+        super().__init__(env, eval_env,  params or {}, continuos_actions,with_news=with_news, date=date)
 
         logger.info("🔧 Instanciant model inicial amb paràmetres per defecte")
         self.model = SAC(
@@ -42,7 +42,7 @@ class SACAgent(BaseAgent):
                 env=self.env,
                 **trial_params
             )
-            model.learn(total_timesteps=20_000, progress_bar=False)
+            model.learn(total_timesteps=30_000, progress_bar=False)
 
             mean_reward = self._evaluate_optuna_model(model, n_eval_episodes)
             logger.debug(f"🎯 Trial {trial.number} — MeanReward={mean_reward:.2f}")

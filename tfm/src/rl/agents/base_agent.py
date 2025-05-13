@@ -11,7 +11,7 @@ from tfm.src.config.settings import PATH_DATA_MODELS
 
 
 class BaseAgent:
-    def __init__(self, env, eval_env, params: dict, with_news: bool = True, datetime_str: str =datetime.today().strftime("%Y-%m-%d_%H-%M")):
+    def __init__(self, env, eval_env,  params: dict, continuos_actions= False, date: str =None, with_news: bool = True):
         self.env = env
         self.eval_env = eval_env
         self.params = params
@@ -19,9 +19,14 @@ class BaseAgent:
         self.model_name = self.__class__.__name__.replace("Agent", "").lower()
         self.with_news = with_news
         if with_news:
-            self.model_dir = PATH_DATA_MODELS  / f"{self.model_name}_with_news" / datetime_str
+            self.model_dir = PATH_DATA_MODELS  / f"{self.model_name}_with_news" / date
         else:
-            self.model_dir = PATH_DATA_MODELS  / f"{self.model_name}_without_news" / datetime_str
+            self.model_dir = PATH_DATA_MODELS  / f"{self.model_name}_without_news" / date
+
+        if self.model_name=="ppo" and continuos_actions:
+            self.model_dir = self.model_dir / "continuous"
+        elif self.model_name=="ppo" and not continuos_actions:
+            self.model_dir = self.model_dir / "discrete"
 
         self.model_dir.mkdir(parents=True, exist_ok=True)
 
@@ -80,6 +85,7 @@ class BaseAgent:
         pd.read_csv(history_paths[worst_idx]).to_csv(worst_path, index=False)
 
         print(f"✅ Evaluation done. Avg Reward: {np.mean(episode_rewards):.2f}")
+        return np.mean(episode_rewards)
 
     def optimize_hyperparameters(self):
         raise NotImplementedError("Optuna optimization to be implemented!")

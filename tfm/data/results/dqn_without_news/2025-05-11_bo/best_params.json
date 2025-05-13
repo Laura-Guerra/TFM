@@ -1,0 +1,10 @@
+{
+  "learning_rate": 1.925660133007223e-05,
+  "learning_starts": 1100,
+  "batch_size": 64,
+  "gamma": 0.9823503188367487,
+  "train_freq": 8,
+  "target_update_interval": 500,
+  "exploration_fraction": 0.2735843896778466,
+  "exploration_final_eps": 0.1258591503043529
+}

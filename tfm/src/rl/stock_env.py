@@ -176,7 +176,7 @@ class StockEnvironment(gymnasium.Env):
         self.history["action_vector"].append(actions_record)
 
         terminated = self.current_step >= self.start_step + self.episode_length
-        truncated = net_worth <= self.initial_balance * 0.15
+        truncated = net_worth <= self.initial_balance * 0.15 or self.balance == self.initial_balance and self.current_step-self.start_step > 5
 
         if terminated or truncated:
             if self.episode_id % 10 == 0 and self.is_train:
@@ -208,7 +208,7 @@ class StockEnvironment(gymnasium.Env):
 
         # Penalització per ocasions perdudes
         missed_penalty = 0.0
-        penalty_scale = 100.0  # Penalització proporcional al canvi de preu si es perd una oportunitat clara
+        penalty_scale = 1000.0  # Penalització proporcional al canvi de preu si es perd una oportunitat clara
         threshold = 0.01  # Canvi del 1%
 
         if self.current_step > 1 and self.history["action_vector"]:
