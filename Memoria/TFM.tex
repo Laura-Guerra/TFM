@@ -101,7 +101,7 @@ En els darrers anys, els algorismes han revolucionat el món de la inversió, tr
 
 L'objectiu d'aquest projecte és explorar com la integració d'informació extreta de notícies pot millorar la capacitat predictiva i la presa de decisions d'un agent d'inversió basat en Aprenentatge per Reforç Profund (Deep Reinforcement Learning, en endavant DRL). Es pretén analitzar si la combinació de dades quantitatives (com preus, volums i altres indicadors històrics) i qualitatives pot oferir un avantatge respecte als enfocaments tradicionals basats exclusivament en dades estructurades.
 
-Les dades qualitatives utilitzades en aquest projecte provenen de notícies, que es processen mitjançant tècniques avançades de tractament del llenguatge natural (Natural Language Processing, en endavant NLP). Aquestes tècniques són la freqüència de terme – freqüència inversa en documents (Term Frequency–Inverse Document Frequency, a partir d'ara TF-IDF), la modelització de temes i l'anàlisi de sentiments.
+Les dades qualitatives utilitzades en aquest projecte provenen de notícies, que es processen mitjançant tècniques avançades de tractament del llenguatge natural (Natural Language Processing, en endavant NLP). Aquestes tècniques inclouen la representació semàntica de paraules amb Word2Vec, la modelització de temes i l'anàlisi de sentiments.
 
 La rellevància d'aquest estudi rau en el fet que vivim en un món interconnectat, on la informació es transmet de manera gairebé instantània. Canvis polítics, conflictes geopolítics o notícies rellevants sobre grans corporacions poden desencadenar reaccions immediates als mercats. Aquest escenari dinàmic exigeix que les estratègies d'inversió siguin més flexibles, adaptatives i capaces d'incorporar informació contextual actualitzada.
 
@@ -156,14 +156,14 @@ Aquest projecte es centra en la implementació d'un model algorítmic per a la i
 
 \subsection{Enfocament i metodologia}
 
-Aquest projecte segueix una estratègia de recerca experimental, centrada en el desenvolupament i avaluació d'un agent d'inversió basat en DRL. La metodologia es basa en la integració de dades estructurades, com preus i volums obtinguts mitjançant Yahoo Finance\cite{YahooFinance}, i dades no estructurades, com notícies extretes de The Guardian\cite{TheGuardian} i The New York Times\cite{NYTimes}. Aquestes notícies es processaran utilitzant tècniques avançades de processament de llenguatge natural, com TF-IDF per identificar paraules clau, topic modeling (LDA) per descobrir temes subjacents, i anàlisi de sentiments per capturar el to dels titulars.
+Aquest projecte segueix una estratègia de recerca experimental, centrada en el desenvolupament i avaluació d'un agent d'inversió basat en DRL. La metodologia es basa en la integració de dades estructurades, com preus i volums obtinguts mitjançant Yahoo Finance\cite{YahooFinance}, i dades no estructurades, com notícies extretes de The Guardian\cite{TheGuardian} i The New York Times\cite{NYTimes}. Aquestes notícies es processaran utilitzant tècniques avançades de processament de llenguatge natural, com Word2Vec per identificar el contingut semàntic, topic modeling (LDA) per descobrir temes subjacents, i anàlisi de sentiments per capturar el to dels titulars.
 
 L'entorn de simulació es desenvoluparà amb OpenAI Gym, integrant tant les dades financeres com les característiques extretes de les notícies. Es definirà un sistema de recompenses amb l'objectiu de guiar l'agent cap a les millors decisions d'inversió. Per a la implementació dels models de DRL, s'utilitzaran tres algoritmes principals: DQN (Deep Q-Network), PPO (Proximal Policy Optimization) i SAC (Soft Actor-Critic). Durant aquesta fase, es realitzarà un ajust d'hiperparàmetres per optimitzar el rendiment dels models.
 
 L'avaluació dels models es durà a terme mitjançant mètriques financeres com el Sharpe Ratio, el Drawdown i el retorn esperat. A més, es compararan els resultats amb estratègies tradicionals, per avaluar fins a quin punt la incorporació de notícies aporta un avantatge competitiu a l'agent. Tota la implementació es realitzarà en Python\cite{Python}, aprofitant llibreries especialitzades.
 
 \subsection{Planificació}
-La planificació d'aquest treball s'ha fet acord a la planificació proposada al pla docent.
+La planificació d'aquest treball s'ha fet d'acord a la planificació proposada al pla docent.
 \begin{itemize}
 
     \item  \textbf{Investigació}: Aquesta primera etapa del projecte se centra en adquirir coneixements sobre el mercat borsari i en la recerca de fonts de dades accessibles que puguin aportar un valor significatiu al treball.
@@ -189,7 +189,7 @@ La planificació d'aquest treball s'ha fet acord a la planificació proposada al
 
 \subsection{Resum dels productes del projecte}
 
-Els resultats d'aquest projecte inclouran el desenvolupament d'un agent d'inversió basat en Aprenentatge per Reforç Profund capaç d'integrar dades financeres i notícies processades mitjançant tècniques de NLP com TF-IDF, topic modeling (LDA) i anàlisi de sentiments. L'agent s'entrenarà en un entorn de simulació desenvolupat amb OpenAI Gym, on podrà analitzar dades de mercat i informació qualitativa per optimitzar la seva presa de decisions.
+Els resultats d'aquest projecte inclouran el desenvolupament d'un agent d'inversió basat en Aprenentatge per Reforç Profund capaç d'integrar dades financeres i notícies processades mitjançant tècniques de NLP com , topic modeling (LDA) i anàlisi de sentiments. L'agent s'entrenarà en un entorn de simulació desenvolupat amb OpenAI Gym, on podrà analitzar dades de mercat i informació qualitativa per optimitzar la seva presa de decisions.
 
 A més, es crearà una pipeline de processament de notícies per obtenir, netejar i transformar titulars de mitjans com The Guardian i The New York Times en una representació numèrica adequada per al model. Finalment, es durà a terme una avaluació detallada dels algorismes DQN, PPO i SAC mitjançant mètriques financeres com el Sharpe Ratio, Drawdown i retorn esperat, amb l'objectiu d'analitzar l'impacte de la integració de notícies en la presa de decisions.
 
@@ -464,29 +464,25 @@ Estabilitat & Moderada & Alta & Alta \\ \hline
 
  Les tècniques de Processament del Llenguatge Natural permeten extreure característiques clau dels textos, ja sigui en forma de paraules rellevants, temàtiques predominants o sentiments. A continuació es descriuen les tècniques que s'han considerat en aquest treball.
 
-\subsubsection{TF-IDF}
+\subsubsection{Word2Vec}
 
-El \emph{Term Frequency–Inverse Document Frequency} (TF-IDF) és una mesura que valora la importància d'una paraula dins d'un document $d$, tot penalitzant les paraules que apareixen amb molta freqüència a la col·lecció global de textos o documents \cite{Ramos2003}. Està composta de dos factors:
+Word2Vec és una tècnica d'aprenentatge no supervisat que permet transformar paraules en vectors numèrics amb dimensió fixa, capturant relacions semàntiques entre mots a partir del seu context \cite{Mikolov2013}. A diferència de representacions basades en freqüències, com TF-IDF, Word2Vec aprèn aquestes representacions mitjançant una xarxa neuronal entrenada sobre seqüències de text, de manera que paraules amb usos similars es representen per vectors propers en l'espai.
+
+Hi ha dues arquitectures principals per entrenar Word2Vec:
 
 \begin{itemize}
-\item \textbf{Term Frequency (TF):} la freqüència relativa d'aparició del mot $t$ en el document $d$. Una definició habitual és:
-\[
-\mathrm{TF}(t,d) \;=\; \frac{f_{t,d}}{\sum_{t' \in d} f_{t',d}},
-\]
-on $f_{t,d}$ és el nombre d'aparicions de $t$ en $d$.
-\item \textbf{Inverse Document Frequency (IDF):} penalitza les paraules molt comunes en el conjunt de textos. Una forma estàndard és:
-\[
-\mathrm{IDF}(t,D) \;=\; \ln \Bigl(\frac{|D|}{\,|\{\,d \in D : t \in d\,\}|}\Bigr),
-\]
-on $D$ és el conjunt de tots els documents.
+    \item \textbf{Continuous Bag-of-Words (CBOW):} prediu una paraula a partir del seu context (les paraules del voltant).
+    \item \textbf{Skip-gram:} fa la tasca inversa: prediu el context a partir d'una sola paraula.
 \end{itemize}
 
-La mesura TF-IDF final per a un mot $t$ en un document $d$ és el producte dels dos factors:
-\[
-\mathrm{TF\text{-}IDF}(t,d) \;=\; \mathrm{TF}(t,d)\;\cdot\;\mathrm{IDF}(t,D).
-\]
+El model genera, per a cada paraula, un vector numèric de longitud $d$ que resumeix la seva relació amb altres paraules segons l'ús en el text. Per tant, paraules que apareixen en contextos similars acaben tenint vectors propers en l'espai.
 
-En contextos financers, aquesta representació pot destacar termes específics que siguin indicatius d'esdeveniments rellevants (p. ex., \emph{crisi}, \emph{fusió}, \emph{banc central}) que poden anticipar canvis de mercat.
+Per obtenir una representació vectorial d'un text com pot ser un conjunt de notícies, és habitual calcular la mitjana dels vectors de totes les paraules que el componen. Això proporciona una única representació densa que resumeix el contingut global del text.
+
+En aquest projecte s'utilitza la variant \texttt{Skip-gram}, ja que funciona millor per a textos amb molta informació, com pot ser el cas de notícies.
+
+Aquesta representació forma part de l'observable per l'agent d'aprenentatge per reforç.
+
 
 \subsubsection{Topic Modeling (LDA)}
 
@@ -547,8 +543,8 @@ El projecte s'ha desenvolupat seguint una arquitectura modular basada en la sepa
         \item \texttt{05-natural\_language\_processing.py}: aplica tècniques NLP (Word2Vec, LDA, FinBERT) per obtenir un vector numèric a partir de les notícies.
         \item \texttt{06-market\_data.py}: descarrega dades històriques dels actius (SPY, USO) i calcula indicadors tècnics.
         \item \texttt{07-state\_builder.py}: fusiona les dades quantitatives i qualitatives per construir els estats d'entrada de l'agent.
-        \item \texttt{08-dqn\_with\_news.py}, \texttt{09-ppo\_with\_news.py}, \texttt{10-sac\_with\_news.py}: entrenen els agents DQN, PPO i SAC respectivament amb notícies com a part de l'estat.
-        \item \texttt{11-dqn\_without\_news.py}, \texttt{12-ppo\_without\_news.py}, \texttt{13-sac\_without\_news.py}: entrenen els mateixos agents però sense informació qualitativa (només dades de mercat).
+        \item \texttt{08-dqn\_with\_news.py}, \texttt{09-ppo\_with\_news.py}, \texttt{10-sac\_with\_news.py}: entrenen els agents DQN, PPO i SAC amb notícies com a part de l'estat.
+        \item \texttt{11-dqn\_without\_news.py}, \texttt{12-ppo\_without\_news.py}, \texttt{13-sac\_without\_news.py}: entrenen els però sense informació qualitativa (només dades de mercat).
         \item \texttt{14-results.py}: recull i visualitza els resultats obtinguts.
     \end{itemize}
 
@@ -556,7 +552,8 @@ El projecte s'ha desenvolupat seguint una arquitectura modular basada en la sepa
     \begin{itemize}
         \item \texttt{raw/}: conté les dades tal com s'obtenen de les fonts originals (API i llibreria de yfinance).
         \item \texttt{processed/}: conté fitxers ja netejats, vectors NLP, dades de mercat i estats fusionats.
-        \item \texttt{results/}: conté models entrenats, resultats, i gràfiques.
+        \item \texttt{models/}: conté els models entrenats i els corresponents logs.
+        \item \texttt{results/}: conté els resultats i gràfiques dels models.
     \end{itemize}
 
     \item \textbf{src/news/}: inclou els mòduls relacionats amb l'obtenció i tractament de notícies.
@@ -565,6 +562,7 @@ El projecte s'ha desenvolupat seguint una arquitectura modular basada en la sepa
         \item \texttt{news\_processor.py}: generació del text complet i integració d'etiquetes.
         \item \texttt{nlp\_processor.py}: vectorització amb LDA, Word2Vec i anàlisi de sentiments.
         \item \texttt{text\_processor.py}: neteja lèxica i estructural de textos.
+        \item \texttt{generate\_new\_date.py}: funció per a assignar la data a la notícia segons el mercat en el que s'opera.
     \end{itemize}
 
     \item \textbf{src/rl/}: Mòduls d'aprenentatge per reforç i entorn de simulació.
@@ -574,11 +572,9 @@ El projecte s'ha desenvolupat seguint una arquitectura modular basada en la sepa
         \item \texttt{stock\_env.py}: implementació de l'entorn de trading amb OpenAI Gym.
     \end{itemize}
 
-    \item \textbf{src/utils/}: Funcions auxiliars i tractament de dades.
+    \item \textbf{src/market/}: inclou els mòduls directament relacionats amb les dades de mercat.
     \begin{itemize}
         \item \texttt{market\_data\_extractor.py}: obtenció de dades de mercat i càlcul d'indicadors tècnics.
-        \item \texttt{split\_data.py}: funció per a dividir les dades en un set d'entrenament i un set de test a partir d'una data.
-        \item \texttt{generate\_new\_date.py}: funció per a assignar la data a la notícia segons el mercat en el que s'opera.
     \end{itemize}
 \end{itemize}
 
@@ -656,7 +652,7 @@ El resultat és una cadena de text que representa tot el contingut de la notíci
 
 \subsubsection{Obtenció de dades de mercat}
 
-Per tal de complementar les característiques qualitatives extretes de les notícies amb informació quantitativa, s'han seleccionat dos actius financers amb perfils diferenciats. Aquests actius permeten explorar si la incorporació de notícies aporta valor en entorns de naturalesa diversa, com ara tendències de mercat o situacions de crisi.
+Per tal de complementar les característiques qualitatives extretes de les notícies amb informació quantitativa, s'han seleccionat dos actius financers amb perfils diferenciats. Aquests actius permeten explorar si la incorporació de notícies aporta valor en entorns diferents, com ara tendències de mercat o situacions de crisi.
 
 \begin{itemize}
     \item \textbf{SPY}: És l'ETF que replica l'evolució de l'índex S\&P 500, un dels principals indicadors del mercat borsari dels Estats Units. Aquest actiu representa el comportament agregat de grans empreses nord-americanes i és sensible a decisions econòmiques o canvis en la situació política, sobretot la dels Estats Units. El seu perfil respon a escenaris de creixement, volatilitat o estabilitat econòmica.
@@ -808,7 +804,7 @@ En primer lloc, s'apliquen tècniques de normalització sobre els indicadors tè
 Un cop normalitzades les dades de mercat, es fa la fusió amb les dades qualitatives procedents del processament NLP. Aquesta unió es fa a través de la data de notícies, ja corregida prèviament, amb la data corresponent a valors quantitatius.
 
 
-El resultat final és un dataframe on cada fila representa tota la informació diaria única per a un actiu concret. Inclou:
+El resultat final és un dataframe on cada fila representa tota la informació diària única per a un actiu concret. Inclou:
 \begin{itemize}
     \item Les característiques de mercat (preus, volum, indicadors tècnics normalitzats).
     \item Les característiques qualitatives per dia (Word2Vec, LDA, sentiment).
@@ -851,7 +847,7 @@ L'entorn permet configurar dos tipus d'espai d'accions, seleccionables segons l'
         \item Valors negatius indiquen una venda. Per exemple, un valor de -0.4 implica vendre el 40\% de les accions en possessió.
         \item El valor 0 correspon a no operar.
     \end{itemize}
-    Aquest espai és apte per l'agent SAC, que està dissenyat per a treballar en espais d'accions continus.
+    Aquest espai és apte per l'agent SAC, que està dissenyat per a treballar en espais d'accions contínues.
 \end{itemize}
 
 \subsubsection{Funció de recompensa}
