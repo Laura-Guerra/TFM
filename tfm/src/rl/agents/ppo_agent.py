@@ -9,8 +9,8 @@ from tfm.src.rl.agents.base_agent import BaseAgent
 
 
 class PPOAgent(BaseAgent):
-    def __init__(self, env, eval_env, continuos_actions= False, params: dict = None, with_news: bool = True, date: str = None):
-        super().__init__(env, eval_env, params or {}, continuos_actions,with_news=with_news, date=date)
+    def __init__(self, env, eval_env, path: str, params: dict = None):
+        super().__init__(env, eval_env, params or {}, path)
 
         if self.env is not None:
             logger.info("🔧 Instanciant model PPO inicial amb paràmetres per defecte")
@@ -41,7 +41,7 @@ class PPOAgent(BaseAgent):
                 **trial_params
             )
 
-            model.learn(total_timesteps=30_000, progress_bar=False)
+            model.learn(total_timesteps=30_000, progress_bar=True)
             mean_reward = self._evaluate_model(model, n_eval_episodes)
 
             logger.debug(f"🎯 Trial {trial.number} — MeanReward={mean_reward:.2f}")

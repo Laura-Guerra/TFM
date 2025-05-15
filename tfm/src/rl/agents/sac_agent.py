@@ -9,8 +9,8 @@ from tfm.src.rl.agents.base_agent import BaseAgent
 
 
 class SACAgent(BaseAgent):
-    def __init__(self, env, eval_env, continuos_actions= False, params: dict = None, with_news: bool = True, date: str = None):
-        super().__init__(env, eval_env,  params or {}, continuos_actions,with_news=with_news, date=date)
+    def __init__(self, env, eval_env, path: str, params: dict = None):
+        super().__init__(env, eval_env,  params or {}, path)
 
         logger.info("🔧 Instanciant model inicial amb paràmetres per defecte")
         self.model = SAC(
@@ -32,7 +32,8 @@ class SACAgent(BaseAgent):
                 "gamma": trial.suggest_float("gamma", 0.95, 0.9999),
                 "tau": trial.suggest_float("tau", 0.005, 0.02),
                 "train_freq": trial.suggest_categorical("train_freq", [1, 4, 8]),
-                "ent_coef": trial.suggest_categorical("ent_coef", ["auto", "auto_0.1", "auto_0.01"]),
+                "ent_coef": trial.suggest_categorical("ent_coef",
+                                                      ["auto", "auto_0.1", "auto_0.01", 0.01, 0.005, 0.001])
             }
 
             logger.debug(f"🧪 Trial {trial.number}: {trial_params}")
@@ -42,7 +43,7 @@ class SACAgent(BaseAgent):
                 env=self.env,
                 **trial_params
             )
-            model.learn(total_timesteps=30_000, progress_bar=False)
+            model.learn(total_timesteps=30_000, progress_bar=True)
 
             mean_reward = self._evaluate_optuna_model(model, n_eval_episodes)
             logger.debug(f"🎯 Trial {trial.number} — MeanReward={mean_reward:.2f}")
