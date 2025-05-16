@@ -15,16 +15,16 @@ from tfm.src.config.settings import PATH_DATA_PROCESSED, PATH_DATA_MODELS
 
 # --- Paràmetres generals ---
 INITIAL_BALANCE = 50_000
-TOTAL_TIMESTEPS = 500_000
+TOTAL_TIMESTEPS = 250_000
 N_TRIALS = 20
 N_EVAL_EPISODES = 15
 EVAL_EPISODES_FINAL = 50
 MODELS = [
     ("sac", SACAgent, True,  True),
-    ("sac", SACAgent, False, True),
     ("ppo", PPOAgent, True, False),# PPO amb notícies, accions discretes
-    ("ppo", PPOAgent, False, False), # PPO sense notícies, accions discretes
     ("dqn", DQNAgent, True,  False),
+    ("sac", SACAgent, False, True),
+    ("ppo", PPOAgent, False, False), # PPO sense notícies, accions discretes
     ("dqn", DQNAgent, False, False),
 ]
 
@@ -120,7 +120,7 @@ def run_model(model_name, AgentClass, with_news, is_continuous):
         print(f"❌ ERROR a {model_name.upper()} {'amb' if with_news else 'sense'} notícies → {e}")
 
 # --- Executa tots els models ---
-for i in range(20,30):
+for i in range(30,40):
     iteration = i+1
     for index, (model_name, AgentClass, with_news, is_continuous) in enumerate(MODELS):
         run_model(model_name, AgentClass, with_news, is_continuous)

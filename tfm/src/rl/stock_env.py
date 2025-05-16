@@ -42,7 +42,7 @@ class StockEnvironment(gymnasium.Env):
         self.observation_space = spaces.Box(
             low=-np.inf,
             high=np.inf,
-            shape=(self.n_assets * (len(self.feature_columns) + 2),),
+            shape=(self.n_assets * (len(self.feature_columns) + 3),),
             dtype=np.float32
         )
 
@@ -88,7 +88,7 @@ class StockEnvironment(gymnasium.Env):
         for i in range(self.n_assets):
             row = self.df.iloc[self.current_step * self.n_assets + i]
             features = row[self.feature_columns].values
-            obs.extend(np.concatenate([features, [self.balance], [self.previous_net_worth]]))
+            obs.extend(np.concatenate([features, [self.balance], [self.previous_net_worth], [self.shares_held[i]]]))
         return np.array(obs, dtype=np.float32)
 
     def decode_action(self, action_idx):
@@ -175,8 +175,13 @@ class StockEnvironment(gymnasium.Env):
         self.history["shares_held_vector"].append(self.shares_held.copy())
         self.history["action_vector"].append(actions_record)
 
+        info = {}
         terminated = self.current_step >= self.start_step + self.episode_length
-        truncated = net_worth <= self.initial_balance * 0.15 or self.balance == self.initial_balance and self.current_step-self.start_step > 5
+        truncated = net_worth <= self.initial_balance * 0.15
+        if self.is_train and self.balance == self.initial_balance and self.current_step-self.start_step > 10:
+            truncated = True
+            reward  = -1000.0
+            info["terminated_reason"] = "inactivity"
 
         if terminated or truncated:
             if self.episode_id % 10 == 0 and self.is_train:
@@ -191,7 +196,7 @@ class StockEnvironment(gymnasium.Env):
                     self.best_episode = self.episode_id
             self.episode_id += 1
 
-        return self._get_obs(), reward, terminated, truncated, {}
+        return self._get_obs(), reward, terminated, truncated, info
 
     def _buy_fixed_cash(self, i, price, cash):
         if self.balance <= 0 or cash <= 0:
@@ -219,17 +224,32 @@ class StockEnvironment(gymnasium.Env):
                     prev_price = self.df.iloc[(self.current_step - 1) * self.n_assets + i]["Close"]
                     curr_price = self.df.iloc[self.current_step * self.n_assets + i]["Close"]
                     price_change = (curr_price - prev_price) / (prev_price + 1e-8)
+
                     action = last_actions[i]
 
-                    # Penalització per no comprar quan el preu ha caigut ≥ 1% i es pot fer
-                    if price_change <= -threshold and self.balance > 0.25 * curr_price and action not in [1, 2, 3]:
-                        missed_penalty += abs(price_change) * penalty_scale
+                    if self.continuous_actions:
+                        # Accions contínues → floats entre [-1, 1]
+                        act_val = float(action)
 
-                    # Penalització per no vendre quan el preu ha pujat ≥ 1% i es tenen accions
-                    if price_change >= threshold and self.shares_held[i] > 0 and action not in [4, 5, 6]:
-                        missed_penalty += abs(price_change) * penalty_scale
-            except IndexError:
-                pass  # Per seguretat, en cas que no hi hagi accions encara
+                        # Penalització per no comprar quan preu ha caigut ≥ 1% i hi ha cash disponible
+                        if price_change <= -threshold and self.balance > 0.25 * curr_price and act_val <= 0.05:
+                            missed_penalty += abs(price_change) * penalty_scale
+
+                        # Penalització per no vendre quan el preu ha pujat ≥ 1% i es tenen accions
+                        if price_change >= threshold and self.shares_held[i] > 0 and act_val >= -0.05:
+                            missed_penalty += abs(price_change) * penalty_scale
+
+                    else:
+                        # Accions discretes → enters de 0 a 6
+                        # [1,2,3] = compra | [4,5,6] = venda
+                        if price_change <= -threshold and self.balance > 0.25 * curr_price and action not in [1, 2, 3]:
+                            missed_penalty += abs(price_change) * penalty_scale
+
+                        if price_change >= threshold and self.shares_held[i] > 0 and action not in [4, 5, 6]:
+                            missed_penalty += abs(price_change) * penalty_scale
+
+            except (IndexError, TypeError):
+                pass  # Per seguretat, si no hi ha accions encara
 
         reward -= missed_penalty
         return reward
