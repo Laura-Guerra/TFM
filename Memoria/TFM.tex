@@ -16,7 +16,7 @@
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{url}
-
+\usepackage{booktabs}
 
 % configuraciones generales
 \hypersetup{
@@ -151,12 +151,13 @@ Aquest projecte es centra en la implementació d'un model algorítmic per a la i
 \begin{description}
     \item[Sostenibilitat] L'entrenament de models d'aprenentatge profund requereix una quantitat significativa de recursos computacionals, això va directament relacionat amb un consum energètic. Aquest impacte es pot minimitzar optimitzant els entrenaments i reduint el nombre de simulacions innecessàries.
     \item[Comportament ètic la responsabilitat social] Les dades utilitzades en el projecte són públiques, per la qual cosa no planteja problemes de privacitat o seguretat. No obstant això, aquests poden ser difícils d'interpretar, ja que sovint funcionen com una 'caixa negra' en la presa de decisions. Per tal de mitigar aquest fet, es posarà èmfasi en l'anàlisi dels resultats i en la comprensió del comportament de l'agent.
-    \item[Diversitat, gènere i drets humans] Aquest treball no té un impacte directe en aquests àmbits ja que se centra en la presa de decisions financeres basada en dades. No obstant això, cal tenir en compte que els models NLP poden heretar biaixos de les fonts d'informació utilitzades. Per evitar-ho, s'utilitzaran notícies de mitjans diversos per minimitzar qualsevol tendència ideològica que pugui afectar les decisions de l'agent.
+    \item[Diversitat, gènere i drets humans] Aquest treball no té un impacte directe en aquests àmbits ja que se centra en la presa de decisions financeres basada en dades. No obstant això, cal tenir en compte que els models de processament del llenguatge natural poden heretar biaixos de les fonts d’informació utilitzades. En aquest cas, les notícies s'utilitzen des d’un punt de vista analític, com a complement informatiu per a l’estat observat dels agents, i no han estat processades amb cap finalitat d’interpretació semàntica o generació de contingut.
+
 \end{description}
 
 \subsection{Enfocament i metodologia}
 
-Aquest projecte segueix una estratègia de recerca experimental, centrada en el desenvolupament i avaluació d'un agent d'inversió basat en DRL. La metodologia es basa en la integració de dades estructurades, com preus i volums obtinguts mitjançant Yahoo Finance\cite{YahooFinance}, i dades no estructurades, com notícies extretes de The Guardian\cite{TheGuardian} i The New York Times\cite{NYTimes}. Aquestes notícies es processaran utilitzant tècniques avançades de processament de llenguatge natural, com Word2Vec per identificar el contingut semàntic, topic modeling (LDA) per descobrir temes subjacents, i anàlisi de sentiments per capturar el to dels titulars.
+Aquest projecte segueix una estratègia de recerca experimental, centrada en el desenvolupament i avaluació d'un agent d'inversió basat en DRL. La metodologia es basa en la integració de dades estructurades, com preus i volums obtinguts mitjançant Yahoo Finance\cite{YahooFinance}, i dades no estructurades, com notícies extretes de The New York Times\cite{NYTimes}. Aquestes notícies es processaran utilitzant tècniques avançades de processament de llenguatge natural, com Word2Vec per identificar el contingut semàntic, topic modeling (LDA) per descobrir temes subjacents, i anàlisi de sentiments per capturar el to dels titulars.
 
 L'entorn de simulació es desenvoluparà amb OpenAI Gym, integrant tant les dades financeres com les característiques extretes de les notícies. Es definirà un sistema de recompenses amb l'objectiu de guiar l'agent cap a les millors decisions d'inversió. Per a la implementació dels models de DRL, s'utilitzaran tres algoritmes principals: DQN (Deep Q-Network), PPO (Proximal Policy Optimization) i SAC (Soft Actor-Critic). Durant aquesta fase, es realitzarà un ajust d'hiperparàmetres per optimitzar el rendiment dels models.
 
@@ -567,7 +568,7 @@ El projecte s'ha desenvolupat seguint una arquitectura modular basada en la sepa
 
     \item \textbf{src/rl/}: Mòduls d'aprenentatge per reforç i entorn de simulació.
     \begin{itemize}
-        \item \texttt{agents/}: implementació dels agents \texttt{DQN}, \texttt{PPO} i \texttt{SAC}, heretant d'un agent base\texttt{BaseAgent}.
+        \item \texttt{agents/}: implementació dels agents \texttt{DQN}, \texttt{PPO} i \texttt{SAC}, heretant d'un agent \texttt{BaseAgent}.
         \item \texttt{state\_assembler.py}: construcció i normalització de l'estat complet de l'agent.
         \item \texttt{stock\_env.py}: implementació de l'entorn de trading amb OpenAI Gym.
     \end{itemize}
@@ -652,16 +653,18 @@ El resultat és una cadena de text que representa tot el contingut de la notíci
 
 \subsubsection{Obtenció de dades de mercat}
 
-Per tal de complementar les característiques qualitatives extretes de les notícies amb informació quantitativa, s'han seleccionat dos actius financers amb perfils diferenciats. Aquests actius permeten explorar si la incorporació de notícies aporta valor en entorns diferents, com ara tendències de mercat o situacions de crisi.
+Per tal de complementar les característiques qualitatives extretes de les notícies amb informació quantitativa, s'han seleccionat tres actius financers amb perfils diferents. Aquests actius permeten explorar si la incorporació de notícies aporta valor en entorns diferents, com ara tendències de mercat o situacions de crisi.
 
 \begin{itemize}
     \item \textbf{SPY}: És l'ETF que replica l'evolució de l'índex S\&P 500, un dels principals indicadors del mercat borsari dels Estats Units. Aquest actiu representa el comportament agregat de grans empreses nord-americanes i és sensible a decisions econòmiques o canvis en la situació política, sobretot la dels Estats Units. El seu perfil respon a escenaris de creixement, volatilitat o estabilitat econòmica.
 
-    \item \textbf{USO}: És l'ETF que replica l'evolució del preu del petroli cru dels Estats Units. Es tracta d'un actiu altament sensible a esdeveniments geopolítics i econòmics, com sancions internacionals o conflictes en regions productores de petroli. Aquest tipus d'esdeveniments tenen una cobertura mediàtica molt extensa i de manera pràcticament immediata, això fa del petroli pugui ser un actiu especialment interessant per avaluar si l'agent és capaç relacionar aquest tipus de notícies amb el preu d'aquest EFT.
+    \item \textbf{XLE}: Aquest actiu agrupa les principals empreses del sector energètic dels Estats Units. És molt sensible a esdeveniments geopolítics, decisions reguladores i fluctuacions en el preu del petroli.
+
+    \item \textbf{GLD}: És un ETF que segueix el valor de l'or físic. A diferència dels actius de renda variable, l'or tendeix a mostrar una evolució més independent respecte al comportament del mercat borsari,
 
 \end{itemize}
 
-L'històric de dades d'aquests actius s'han obtingut a través de la llibreria \texttt{yfinance}, que proporciona accés a dades de mercat diàries de fonts com Yahoo Finance. Per a cada actiu s'han descarregat els preus d'obertura, màxim, mínim, tancament, volum i identificador del ticker. El període analitzat comprèn des de gener de 2014 fins a abril de 2025, afegint un marge de 60 dies anteriors per a poder fer el càlcul d'indicadors tècnics a partir de l'1 de gener de 2014.
+L'històric de dades d'aquests actius s'ha obtingut a través de la llibreria \texttt{yfinance}, que proporciona accés a dades de mercat diàries de fonts com Yahoo Finance. Per a cada actiu s'han descarregat els preus d'obertura, màxim, mínim, tancament, volum i identificador del ticker. El període analitzat comprèn des de gener de 2014 fins a abril de 2025, afegint un marge de 60 dies anteriors per a poder fer el càlcul d'indicadors tècnics a partir de l'1 de gener de 2014.
 
 \subsubsection*{Càlcul d'indicadors tècnics}
 
@@ -688,13 +691,15 @@ Cada dia es publiquen múltiples notícies, però per al nostre model, es busca 
 Aquest pipeline es pot dividir en quatre fases principals: anàlisi de sentiments, selecció de notícies, construcció del text agregat i extracció de característiques.
 
 \subsubsection{Anàlisi de sentiments i selecció de notícies rellevants}
+??? ---> Revisar aquesta part
 
-Per a cada dia, s'avalua la polaritat emocional de totes les notícies disponibles per a poder identificar les més rellevants. En un inici, es va considerar l'ús de la llibreria \texttt{TextBlob}, habitual en tasques d'anàlisi de sentiments però, es va observar que aquesta eina, pensada per a llenguatge general, no capturava correctament la rellevància o el context de notícies econòmiques i financeres.
+Per a cada dia, s'avalua la polaritat emocional de totes les notícies disponibles per a poder identificar les més rellevants. En un inici, es va considerar l'ús de la llibreria \texttt{TextBlob}, habitual en tasques d'anàlisi de sentiments, però es va observar que aquesta eina, pensada per a llenguatge general, no capturava correctament la rellevància o el context de notícies econòmiques i financeres.
 
 Per aquest motiu, s'ha optat per \texttt{FinBERT}, un model basat en un Transformador i entrenat específicament sobre textos del domini financer.
 
 La puntuació de sentiment retornada per FinBERT és un valor escalar entre -1 i +1, que expressa la polaritat general del text. A partir d'aquestes puntuacions, es calcula el valor absolut de cada notícia per mesurar-ne la intensitat emocional, i es seleccionen les 5 notícies més extremes (positives o negatives). Aquesta selecció de notícies es basa en la hipòtesi que aquestes notícies són també les que tenen més probabilitat d'influir en els moviments del mercat.
 
+??? <--- Revisar aquesta part
 
 \subsubsection{Construcció i ús del text per al NLP}
 
@@ -761,13 +766,11 @@ S'aplica el model LDA entrenat per obtenir un vector de probabilitats de longitu
 
 Per calcular el valor del sentiment global del dia, s'utilitza el text concatenat original, sense aplicar-hi preprocessament. FinBERT ha estat entrenat amb text natural, i netejar-lo pot eliminar informació rellevant.
 
-A partir d'aquest text i de les notícies més rellevants del dia, es calculen tres mètriques de sentiment:
+A partir d'aquest text i de les notícies més rellevants del dia, es calculen dues mètriques de sentiment:
 
 \begin{itemize}
     \item \textbf{Sentiment global del dia}: valor entre -1 i +1 obtingut aplicant FinBERT sobre el text complet concatenat.
     \item \textbf{Mitjana del sentiment}: mitjana aritmètica de les notícies més rellevants.
-    \item \textbf{Sentiment màxim}: valor de sentiment més positiu entre les notícies.
-    \item \textbf{Sentiment mínim}: valor de sentiment més negatiu entre les notícies.
 \end{itemize}
 
 Finalment, el resultat final d'aquest NLP és una única fila per dia que conté:
@@ -785,9 +788,6 @@ Finalment, el resultat final d'aquest NLP és una única fila per dia que conté
 
     \item \textbf{Mitjana del sentiment}: mitjana aritmètica de les puntuacions individuals.
 
-    \item \textbf{Sentiment màxim}: valor més positiu entre totes les notícies del dia.
-
-    \item \textbf{Sentiment mínim}: valor més negatiu entre totes les notícies del dia.
 \end{itemize}
 
 Aquest vector representa la part qualitativa de l'estat que l'agent d'aprenentatge per reforç observarà en cada pas.
@@ -813,77 +813,123 @@ El resultat final és un dataframe on cada fila representa tota la informació d
 \end{itemize}
 
 \subsection{Definició de l'entorn}
-L'entorn de simulació utilitzat per entrenar els agents es basa en la llibreria \texttt{Gymnasium} i ha estat desenvolupat específicament per a tractar les característiques d'aquest treball. Aquest entorn reprodueix un mercat financer fictici on l'agent pot operar diàriament amb un actius, prenent decisions de compra o venda en funció d'un estat observat que inclou tant dades quantitatives com qualitatives.
+L'entorn de simulació utilitzat per entrenar els agents es basa en la llibreria \texttt{Gymnasium}. Aquest entorn reprodueix un mercat financer fictici on l'agent pot prendre decisions independents de compra o venda per a cadascun dels actius disponibles (SPY, GLD, XLE), en funció d'un estat observat que inclou tant dades quantitatives com qualitatives.
 
 \subsubsection{Espai d'estats}
-
-L'estat observat en cada pas temporal està format per:
+L'estat observat en cada pas temporal consisteix en la concatenació de característiques bursàries relacionades amb cada actiu i de les variables globals associades a les notícies.
 \begin{itemize}
-    \item Les característiques del dia anterior (\texttt{d-1}) de l'actiu: indicadors tècnics, preus i dades de volum.
-    \item Les característiques qualitatives de les notícies fins al moment de apertura del mercat, comunes a tots els actius: vector Word2Vec (dimensió 100), vector LDA (dimensió $k=10$) i sentiment (escala de -1 a 1).
-    \item El diners restants actuals (\texttt{balance}) i el valor net de la cartera (\texttt{net\_worth}).
+    \item Per a cada actiu:
+    \begin{itemize}
+        \item Preu d'obertura, tancament i volum del dia anterior.
+        \item Indicadors tècnics (SMA, RSI, MACD).
+        \item Quantitat d'accions en cartera d'aquell actiu.
+    \end{itemize}
+    \item Variables comunes:
+    \begin{itemize}
+        \item Característiques qualitatives de les notícies fins al moment de apertura del mercat, comunes a tots els actius: vector Word2Vec (dimensió 100), vector LDA (dimensió $k=10$) i sentiments (escala de -1 a 1).
+        \item El diners restants actuals (\texttt{balance}) i el valor net total de la cartera (\texttt{net\_worth}).
+    \end{itemize}
 \end{itemize}
 
 Tota aquesta informació s'afegeix en un vector d'observació.
 
 \subsubsection{Espai d'accions}
-
 L'entorn permet configurar dos tipus d'espai d'accions, seleccionables segons l'agent:
-\begin{itemize}
-    \item \textbf{Espai d'accions discret}: en aquest mode, l'agent disposa d'un conjunt finit de 7 accions possibles per a cada cada pas de temps. Aquestes accions són:
-    \begin{itemize}
-        \item \texttt{0}. No fer res.
-        \item \texttt{1}. Comprar el 25\% del capital disponible.
-        \item \texttt{2}. Comprar el 50\% del capital disponible.
-        \item \texttt{3}. Comprar el 100\% del capital disponible.
-        \item \texttt{4}. Vendre el 25\% de les accions en cartera.
-        \item \texttt{5}. Vendre el 50\% de les accions en cartera.
-        \item \texttt{6}. Vendre el 100\% de les accions en cartera.
-    \end{itemize}
+\vspace{0.5em}
+\paragraph{Espai d'accions discret}
+En aquest mode, cada pas temporal requereix que l'agent prengui una decisió per a cadascun dels $n$ actius disponibles. Aquest conjunt de decisions es pot representar com un vector $\mathbf{a} = (a_1, a_2, \ldots, a_n)$, on cada component $a_i$ correspon a una acció per a l'actiu $i$-èsim. El domini d'aquestes accions és discret i finit, amb set opcions possibles:
 
-    \item \textbf{Espai d'accions continu}: en aquest mode, l'agent retorna un valor real entre -1 i 1. Aquest valor representa una acció contínua:
-    \begin{itemize}
-        \item Valors positius indiquen una compra. Per exemple, un valor de 0.6 implica comprar el nombre d'accions que pugui amb el 60\% del capital disponible.
-        \item Valors negatius indiquen una venda. Per exemple, un valor de -0.4 implica vendre el 40\% de les accions en possessió.
-        \item El valor 0 correspon a no operar.
-    \end{itemize}
-    Aquest espai és apte per l'agent SAC, que està dissenyat per a treballar en espais d'accions contínues.
+\begin{itemize}
+    \item \texttt{0}: No fer res.
+    \item \texttt{1}: Comprar el 25\% del capital disponible.
+    \item \texttt{2}: Comprar el 50\% del capital disponible.
+    \item \texttt{3}: Comprar el 75\% del capital disponible.
+    \item \texttt{4}: Vendre el 25\% de les accions en cartera.
+    \item \texttt{5}: Vendre el 50\% de les accions en cartera.
+    \item \texttt{6}: Vendre el 100\% de les accions en cartera.
 \end{itemize}
+
+Això defineix un espai d'accions teòric de dimensió $n$, on cada component pot prendre un valor de l'interval $\{0, 1, \dots, 6\}$. L'espai combinatori resultant té, per tant, $7^n$ possibles combinacions:
+
+\[
+\mathcal{A} = \{0,1,\ldots,6\}^n
+\]
+
+Tanmateix, no totes aquestes combinacions són vàlides. Per tal d'evitar les accions en què l'agent intenti comprar simultàniament diversos actius amb més del 100\% del capital disponible, només es mantenen aquelles accions associades a vectors $\mathbf{a}$ que compleixen:
+
+\[
+\sum_{i=1}^{n} buy\_prop(a_i) \leq 1.0
+\]
+
+on $buy\_prop(a_i)$ és la proporció de capital associada a cada acció de compra (p.ex. 0.25 per $buy\_prop(1)=0.25$).
+
+vspace{0.5em}
+\paragraph{Espai d'accions continu}
+
+Aquest mode s'utilitza l'algorisme SAC, l'agent emet directament el vector de dimensió $n$:
+
+\[
+\mathbf{a} \in [-1, 1]^n
+\]
+
+Cada component $a_i$ representa una acció contínua sobre l'actiu $i$-èsim:
+
+\begin{itemize}
+    \item $a_i > 0$: l'agent compra utilitzant $a_i \cdot 100\%$ del capital disponible.
+    \item $a_i < 0$: l'agent ven $|a_i| \cdot 100\%$ de la posició actual.
+    \item $a_i = 0$: no realitza cap acció sobre aquell actiu.
+\end{itemize}
+
+A l'igual que en el mode discret, per tal que la suma de compres no superi el capital disponible, es normalitza el vector de compra abans d'executar les operacions. Concretament, es calcula:
+
+\[
+\text{prop\_buy}_i = \frac{a_i^+}{\sum_{j=1}^n a_j^+}
+\quad \text{per a cada } i \text{ tal que } a_i > 0
+\]
+
+on $a_i^+$ és la part positiva de $a_i$. Si la suma total dels valors positius $\sum a_i^+ > 1$, es redueixen proporcionalment totes les proporcions de compra perque la quantitat total gastada no superi el 100\% del capital.
+
 
 \subsubsection{Funció de recompensa}
 
 La funció de recompensa determina l'objectiu que l'agent intenta optimitzar. En aquest cas, s'ha definit com la variació relativa del valor net de la cartera entre dos dies consecutius:
 
 \begin{equation}
-r_t = \frac{\text{net\_worth}_t - \text{net\_worth}_{t-1}}{\text{net\_worth}_{t-1}} \cdot 100
+r_t = \text{net\_worth}_t - \text{net\_worth}_{t-1}
 \end{equation}
 
 El valor net de la cartera (\texttt{net\_worth}) es calcula com la suma de l'efectiu disponible i el valor de mercat de totes les accions en propietat:
 
 \begin{equation}
-\text{net\_worth}_t = \text{cash}_t + \sum_{i=1}^{N} \left( \text{n\_shares}_i \cdot \text{price}_i \right)
+\text{net\_worth}_t = \text{cash}_t + \sum_{i=1}^{N} \left( \text{n\_shares}_i \cdot \text{close\_price}_i \right)
 \end{equation}
 
 on:
 \begin{itemize}
-    \item cash és el capital no invertit disponible.
-    \item n\_shares indica la quantitat d'accions en possessió per a cada actiu.
-    \item price és el preu de tancament de l'actiu en el dia t.
+    \item $\text{cash}_t$ és el capital disponible (no invertit) en el pas $t$,
+    \item $\text{n\_shares}_i$ és la quantitat d'accions mantingudes de l'actiu $i$,
+    \item $\text{close\_price}_i$ és el preu de tancament de l'actiu $i$ en el dia $t$.
 \end{itemize}
 
-A més de la recompensa principal, s'han incorporat penalitzacions suaus per incentivar un comportament actiu en l'agent:
+A més de la recompensa principal, s'afegeixen penalitzacions que busquen incentivar que l'agent tingui un comportament actiu:
 
 \begin{itemize}
-    \item \textbf{Accions inefectives}: si l'agent intenta comprar sense tenir diners o vendre sense tenir accions, es penalitza la recompensa.
-    \item \textbf{Inacció prolongada}: si l'agent no compra ni ven durant més de 10 passos consecutius, s'aplica una penalització a la recompensa.
-    \item \textbf{Estabilitat de capital durant la fase d'entrenament}: es penalitzen també els canvis mínims en el valor net (inferiors al 0.05\%), per evitar que l'agent opti per una estratègia massa conservadora o inactiva.
+    \item \textbf{Oportunitats perdudes de compra}: si el preu d'un actiu ha caigut més d'un 1\% respecte al dia anterior i l'agent disposa de saldo però no executa una compra, es penalitza proporcionalment a la magnitud de la caiguda.
+
+    \item \textbf{Oportunitats perdudes de venda}: si el preu d'un actiu ha pujat més d'un 1\% i l'agent manté posicions però no ven, també es penalitza segons la pujada.
 \end{itemize}
 
-Aquestes recompenses i penalitzacions pretenen que l'agent tingui comportaments proactius alhora que incentiven l'augment de riquesa i penalitzen les pèrdues.
+Aquestes recompenses i penalitzacions tenen com a objectiu que l'agent tingui comportaments proactius i incentivar l'augment de riquesa.
 
 \subsubsection*{Condició de fallida}
 
-Per evitar que l'agent segueixi estratègies massa especulatives, s'ha definit una condició de finalització anticipada si el valor net de l'agent cau per sota d'un 15\% del seu capital inicial.
+Per evitar estratègies excessivament especulatives o inactives, s'ha definit una condició de finalització anticipada de l'episodi. L'entrenament s'interromp si es compleix alguna de les següents condicions:
+
+\begin{itemize}
+    \item El valor net de la cartera (\texttt{net\_worth}) cau per sota del 15\% del capital inicial.
+    \item L'agent no ha realitzat cap operació durant més de cinc passos consecutius i manté el capital intacte (sense invertir).
+\end{itemize}
+
 
 \subsubsection{Mecàniques de cada pas}
 
@@ -950,40 +996,337 @@ El SAC és un algorisme off-policy dissenyat per espais d'acció continus. Combi
 
 
 \subsection{Entrenament dels agents}
-Per entrenar els agents, es parteix d'un conjunt de dades històriques que es divideixen en tres períodes consecutius.
+Per a l'entrenament dels agents, es parteix d'un conjunt de dades històriques que es divideix en tres períodes consecutius:
 \begin{itemize}
 \item \textbf{Train}: de l'01-01-2014 al 31-12-2021.
 \item \textbf{Validació}: de l'01-01-2022 al 31-12-2023.
 \item \textbf{Test}: de l'01-01-2024 al 30-04-2025.
 \end{itemize}
 
-Les dues primeres parts s'utilitzen per ajustar el model, mentre que les dades de Test es reserven exclusivament per l'avaluació del model.
+Els conjunts d'entrenament i validació s'utilitzen per ajustar el comportament dels agents i seleccionar els millors hiperparàmetres, mentre que el conjunt de test es reserva exclusivament per a l'avaluació final del rendiment, sense cap interacció prèvia amb el model.
+
+Cada episodi d'entrenament i validació té una longitud fixa de 200 passos temporals, corresponents a 200 dies borsaris. A l'inici de cada episodi, es selecciona aleatòriament una data d'inici dins del període corresponent, de manera que els episodis cobreixen diferents intervals temporals i contextos econòmics.
+
 
 \subsubsection{Cerca d'hiperparàmetres}
-Abans de fer l'entrenament definitiu, s'executa una optimització d'hiperparàmetres mitjançant la llibreria Optuna. Aquesta eina permet realitzar una cerca eficient mitjançant optimització bayesiana, adaptant les propostes en funció dels resultats obtinguts en iteracions anteriors.
+Abans de realitzar l'entrenament definitiu, es duu a terme una optimització dels hiperparàmetres mitjançant la llibreria \texttt{Optuna}. Aquesta eina permet executar una cerca d'hiperparàmetres basada en optimització bayesiana.
 
-Per a cada intent que executa Optuna, es crea un agent amb una combinació específica d'hiperparàmetres seleccionada automàticament d'entrenament, i es valida seguidament sobre l'entorn de validació, executant 5 episodis complets.
+Es realitzen 20 intents diferents per agent i per a cadascun, es crea un agent amb una combinació específica d'hiperparàmetres seleccionada automàticament d'entrenament, i es valida seguidament sobre l'entorn de validació, executant 15 episodis complets.
 
-La mètrica utilitzada per escollir els millors hiperparàmetres és la recompensa mitjana obtinguda en els capítols de validació. El procés de cerca es repeteix 30 vegades, i el conjunt d'hiperparàmetres amb millor rendiment mitjà es desa com a configuració òptima.
+La mètrica utilitzada per escollir els millors hiperparàmetres és la recompensa mitjana obtinguda en els capítols de validació. El procés de cerca es repeteix 20 vegades, i el conjunt d'hiperparàmetres amb millor rendiment mitjà es desa com a configuració òptima per a tots els entrenaments.
 
 \subsubsection{Entrenament final}
-Un cop identificats els millors hiperparàmetres per a cada agent, es duu a terme un entrenament complet utilitzant la unió dels conjunts d'entrenament i validació. En aquest cas l'entrenament s'executa durant 500 mil passos. Aquest model entrenat es desa i és el que s'utilitza posteriorment per l'avaluació de l'agent.
+
+Un cop seleccionats els millors hiperparàmetres per a cada agent mitjançant el procés de validació, es procedeix a l'entrenament final del model. En aquesta fase, s'utilitza com a conjunt de dades la combinació dels períodes d'entrenament i validació (de 2014 a 2023), amb l'objectiu de maximitzar la quantitat d'informació disponible per a l'aprenentatge.
+
+L'entrenament s'estructura en episodis de 200 passos, iniciats en punts aleatoris dins del període d'entrenament i té una durada de 250 mil passos. També s'han realitzat proves amb entrenaments de 500 mil passos, però en la majoria de casos, l'agent queda atrapat en polítiques subòptimes i té un rendiment inferior.
+
 
 \subsection{Rendiment dels agents}
+Per avaluar la qualitat dels agents entrenats, s'utilitzen les dades compreses entre l'1 de gener de 2024 i el 30 d'abril del 2025. Durant aquesta fase, l'agent opera sense exploració i es limita a executar la política que ha après durant l'entrenament durant tot el període de prova.
 
-Per avaluar la qualitat dels agents entrenats, s'utilitzen les dades a partir del 2024 com a escenari de test. Durant aquesta fase, l'agent opera sense exploració i es limita a executar la seva política optimitzada tal com ha après durant l'entrenament.
-
-La validació es realitza sobre diversos episodis i s'avalua a partir de les següents mètriques:
+Les mètriques utilitzades per analitzar el comportament dels agents són les següents:
 
 \begin{itemize}
-    \item \textbf{Recompensa acumulada}: suma total de les recompenses obtingudes durant un episodi. Reflecteix el guany brut en valor net.
+    \item \textbf{Recompensa acumulada}: suma total de les recompenses obtingudes durant un episodi. Reflecteix l'evolució agregada del valor net de la cartera:
+    \[
+    R_{\text{episodi}} = \sum_{t=1}^{T} r_t
+    \]
+    on $r_t$ és la recompensa obtinguda en el pas $t$, i $T$ és la durada total de l'episodi.
 
-    \item \textbf{Sharpe Ratio}: mesura la rendibilitat ajustada al risc, calculant el quocient entre la mitjana dels retorns i la seva desviació estàndard. És un dels indicadors més utilitzats per valorar estratègies d'inversió.
+    \item \textbf{Sharpe Ratio}: indica la rendibilitat ajustada al risc. Es calcula com:
+    \[
+    S = \frac{\bar{r} - r_f}{\sigma_r} \cdot \sqrt{N}
+    \]
+    on $\bar{r}$ és el retorn mitjà diari, $r_f$ és el retorn lliure de risc (en aquest cas s'ha considerat 0), $\sigma_r$ és la desviació estàndard dels retorns diaris, i $N$ és el nombre de dies anuals que s'operen ($N = 252$).
 
-    \item \textbf{Max Drawdown}: representa la pèrdua màxima respecte al màxim històric del valor net. Indica fins a quin punt la cartera pot haver-se desvaloritzat en el pitjor moment.
+    \item \textbf{Max Drawdown}: màxima pèrdua relativa respecte a un màxim històric anterior del valor de la cartera:
+    \[
+    \text{MaxDrawdown} = \max_{t \in [1,T]} \left( \frac{\max_{i \in [1,t]} V_i - V_t}{\max_{i \in [1,t]} V_i} \right)
+    \]
+    on $V_t$ és el valor de la cartera en el pas $t$.
 
-    \item \textbf{Retorn mitjà}: mitjana del canvi percentual diari de la cartera, acumulat durant tot l'episodi. Mostra la capacitat sostinguda de generar guanys.
+    \item \textbf{Retorn mitjà}: mitjana del canvi percentual diari del valor de la cartera:
+    \[
+    \bar{r} = \frac{1}{T} \sum_{t=1}^{T} \frac{V_t - V_{t-1}}{V_{t-1}}
+    \]
+    on $V_t$ representa el valor net de la cartera en el pas $t$.
 \end{itemize}
+
+
+Donada la variabilitat estocàstica de l'aprenentatge per reforç, no tots els entrenaments aconsegueixen polítiques òptimes. És per això que, per cada agent, es duen a terme 10 entrenaments amb els millors hiperparàmetres trobats durant la fase de validació.
+
+\subsubsection{Comparació amb la implementació sense notícies}
+
+Per poder valorar l'impacte de la incorporació de notícies, s'ha implementat una versió de cada agent sense incloure la informació associada a les notícies.
+
+Per garantir una comparació equitativa, es reprodueix exactament el mateix procés experimental.
+
+\chapter{Resultats}
+
+En aquest capítol s'exposen els resultats obtinguts durant el projecte. L'objectiu principal és analitzar el comportament dels agents d'inversió desenvolupats, així com avaluar l'impacte de la incorporació d'informació provinent de notícies en la presa de decisions.
+
+Els resultats es divideixen en diversos apartats. En primer lloc, es mostren les sortides més rellevants del processament del llenguatge natural aplicat als títols i resums de notícies. Tot seguit, es mostren els resultats del procés de selecció d'hiperparàmetres, molt rellevant per optimitzar el rendiment dels agents.
+
+A continuació, s'ofereix una comparació entre els diferents agents, tant en entorns amb notícies com sense. Finalment, es descriuen les principals limitacions i anomalies observades durant l'execució del treball.
+
+
+\subsection{Resultats del processament de notícies}
+En aquesta secció s’analitzen els resultats obtinguts a partir del NLP. Tots els resultats que es mostren corresponen exclusivament al període de test (de gener de 2024 a abril de 2025), ja que és durant aquesta fase quan s’avalua el comportament dels agents.
+
+Tanmateix, aquest procés també s'ha fet per a cada dia del període de test i s’han incorporat com a part de l’estat observat pels agents durant la fase d’explotació.
+
+\subsubsection{Word2Vec}
+Els vectors Word2Vec representen el context informatiu de cada dia a partir del significat semàntic dels títols i resums de les notícies publicades. Per tal de visualitzar l’estructura latent d’aquestes representacions, s’ha aplicat una reducció de dimensionalitat amb PCA seguida d’un t-SNE sobre els vectors corresponents al període de test (2024–2025).
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{figs/fig_w2v_tsne_trimestres_colormap_pca.png}
+	\caption{t-SNE aplicat als vectors Word2Vec diaris, amb reducció prèvia mitjançant PCA. El color indica el trimestre corresponent.}
+	\label{fig:lda-evol}
+\end{figure}
+
+Tal com mostra la Figura~\ref{fig:lda-evol}, tot i que la separació entre trimestres no és perfectament definida, es poden identificar agrupacions parcials de dies amb contextos semàntics similars. A diferència del modelatge temàtic per LDA, aquesta representació no es basa en una assignació explícita de temes, sinó en l’estructura distribuïda del significat de les paraules, la qual cosa proporciona una visió complementària i més flexible del contingut informatiu.
+
+La coherència observada en certs trams temporals suggereix que els vectors Word2Vec capturen regularitats informatives útils per a l’agent d’inversió, especialment en situacions en què els temes no són fàcilment separables però sí semànticament propers.
+
+
+\subsubsection{Modelatge per temes (LDA)}
+
+Amb l’objectiu de representar el contingut informatiu present a les notícies de cada dia, s’ha aplicat un model LDA entrenat prèviament amb notícies anteriors a 2024. Aquest model ha permès identificar fins a quin punt cadascun dels temes latents inferits és present en el conjunt de notícies publicades en una data determinada. El resultat ha estat una distribució de probabilitat per dia, que actua com a descripció temàtica agregada del context informatiu.
+
+A partir de l’entrenament del model, s’han inferit deu temes, cadascun dels quals s’ha caracteritzat per un conjunt de paraules representatives. A continuació es mostren els temes juntament amb els seus termes principals:
+
+\begin{itemize}
+    \item \textbf{Tema 1:} election, politics, state, party, presidential, biden, government, republican
+    \item \textbf{Tema 2:} ukraine, china, russian, invasion, putin, hong, kong
+    \item \textbf{Tema 3:} britain, company, inc, trade, market, business, computer
+    \item \textbf{Tema 4:} protest, government, india, demonstration, capitol, politics
+    \item \textbf{Tema 5:} military, defense, international, force, relation, president
+    \item \textbf{Tema 6:} trump, donald, israel, palestinian, news, human, president
+    \item \textbf{Tema 7:} court, afghanistan, supreme, clinton, justice, hillary, taliban
+    \item \textbf{Tema 8:} war, syria, crime, iraq, murder, police, child
+    \item \textbf{Tema 9:} coronavirus, ncov, korea, immigration, australia, germany
+    \item \textbf{Tema 10:} federal, law, european, economy, union, tax, labor
+\end{itemize}
+
+Aquest conjunt de temes ha cobert una àmplia gamma d’àmbits, especialment relacionats amb política internacional, conflictes armats, economia, salut global i qüestions judicials. Aquesta diversitat ha reflectit bé la naturalesa del corpus i ha donat suport a la hipòtesi que les notícies poden aportar informació contextual rellevant per a la presa de decisions financeres.
+
+Per analitzar l’evolució d’aquests temes durant el període de test (gener 2024 – abril 2025), s’ha calculat la mitjana mensual de la distribució temàtica. La Figura~\ref{fig:lda-evol} mostra aquesta evolució, dividida en dues subgràfiques per facilitar-ne la llegibilitat.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{figs/fig_lda_lineplot_mensual_subplots.png}
+	\caption{Evolució de la mitjana mensual d'aparició de les temàtiques de LDA en les notícies.}
+	\label{fig:lda-evol}
+\end{figure}
+
+S’ha observat que alguns temes han mantingut una presència estable al llarg del període, com el Tema 5 (relacions internacionals i defensa) o el Tema 7 (afers judicials). En canvi, altres han presentat variacions més marcades: el Tema 6 (relacionat amb el conflicte a Orient Mitjà i la política nord-americana) ha experimentat una tendència creixent durant l’any 2024 i principis de 2025, coincidint amb el context preelectoral als Estats Units. El Tema 10 ha mostrat un pic pronunciat durant el primer trimestre de 2025, possiblement vinculat a l’increment de notícies sobre fiscalitat i tensions comercials internacionals, en el marc de les declaracions del govern nord-americà sobre la imposició d’aranzels a Europa i la Xina.
+
+
+\subsubsection{Anàlisi de sentiment}
+
+Per complementar la representació temàtica del contingut informatiu, s’ha analitzat també el to emocional de les notícies mitjançant un model de sentiment basat en FinBERT. Es disposa de dues mesures per cada dia: el sentiment mitjà de totes les frases processades i una classificació global de la notícia segons la polaritat predominant.
+
+La Figura~\ref{fig:sentiment-violin} mostra la distribució de totes dues mesures al llarg del període de test, agrupades per trimestre i visualitzades mitjançant gràfics de violí amb orientació horitzontal.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{figs/fig_sentiment_swarm_boxplot.png}
+	\caption{Distribució del sentiment mitjà (esquerra) i del sentiment global (dreta) de les notícies per trimestre.}
+	\label{fig:sentiment-violin}
+\end{figure}
+
+Pel que fa al sentiment mitjà, s’observa una distribució força estable al llarg del període, amb valors majoritàriament positius i una concentració propera a 0.9 en tots els trimestres. Aquesta estabilitat pot reflectir el to neutre o institucionalitzat del llenguatge financer general.
+
+En canvi, el sentiment global mostra una distribució molt més polaritzada i asimètrica, amb una acumulació notable de valors al voltant de -1.0, especialment en el primer semestre de 2025. Aquest patró pot indicar la presència recurrent de notícies negatives durant certs trams temporals, que no arriben a impactar en el càlcul mitjà degut a l’efecte suavitzador de la mitjana. Aquesta dualitat justifica la utilitat de considerar ambdues perspectives dins l’estat observat pels agents d’inversió.
+
+
+\subsection{Optimització i selecció d’hiperparàmetres}
+
+La selecció dels hiperparàmetres òptims per a cada algorisme s’ha fet mitjançant el sistema Optuna, tal com s’ha explicat al capítol d’Implementació. En cada cas, s’ha optimitzat la recompensa mitjana obtinguda durant la fase de validació a partir de múltiples episodis amb condicions inicials aleatòries.
+
+Els valors òptims trobats s’han fet servir com a configuració per a l’entrenament final de cada agent, amb l’objectiu de maximitzar el rendiment a partir de tota la informació disponible.
+
+Els detalls complets de les combinacions provades, així com els resultats quantitatius de cada cerca d’Optuna, es poden consultar a l’Annex~\ref{annex:hiperparametres}.
+
+Tanmateix, durant la implementació de l’entorn sense notícies de DQN, s’ha observat que l’ús dels hiperparàmetres trobats específicament per a aquest cas ha generat models amb rendiments molt més baixos. Després de diverses proves, s’ha comprovat que utilitzar els hiperparàmetres trobats per al DQN amb notícies també en el cas sense notícies ha produït resultats considerablement millors i més estables. Per aquest motiu, s’ha optat per mantenir aquests valors compartits en el cas del DQN.
+
+
+\subsection{Rendiment global dels agents}
+
+Aquesta secció presenta una primera aproximació al comportament global dels agents entrenats, agrupant els resultats de totes les iteracions per a cada arquitectura (DQN, PPO i SAC), amb i sense incorporació de notícies en l'estat observat. Per tal de facilitar-ne la identificació, els agents entrenats sense notícies es marquen amb un asterisc (*).
+
+La Taula~\ref{tab:resultats-globals} resumeix dues mètriques fonamentals per avaluar el rendiment dels agents: la recompensa acumulada (expressada en milers) i l’increment mitjà del valor de la cartera (en percentatge). Per a cada mètrica es reporta la mitjana, la desviació estàndard i la mediana entre parèntesis. Aquesta informació permet fer una primera valoració del rendiment agregat i la seva estabilitat entre iteracions.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrr}
+\toprule
+\textbf{Agent} & \textbf{Recompensa (mil)} & \textbf{Increment cartera (\%)} \\
+\midrule
+DQN*  & 2.2 ± 9.3 \hspace{1mm} (-2.5)   & 9.4 ± 19.1 \hspace{1mm} (-0.0) \\
+DQN   & 7.4 ± 10.9 \hspace{1mm} (3.8)   & 19.5 ± 22.0 \hspace{1mm} (12.4) \\
+PPO*  & 10.4 ± 11.6 \hspace{1mm} (6.7)  & 25.8 ± 23.4 \hspace{1mm} (18.4) \\
+PPO   & 7.0 ± 8.4 \hspace{1mm} (5.6)    & 18.9 ± 17.0 \hspace{1mm} (15.8) \\
+SAC*  & -9.8 ± 11.2 \hspace{1mm} (-11.0) & 27.8 ± 20.3 \hspace{1mm} (28.9) \\
+SAC   & -6.8 ± 12.2 \hspace{1mm} (-4.5) & 30.9 ± 24.5 \hspace{1mm} (40.5) \\
+\bottomrule
+\end{tabular}
+\caption{Rendiment agregat dels agents amb i sense notícies. Les mètriques mostren mitjana ± desviació estàndard, amb la mediana entre parèntesis. Els agents amb asterisc (*) han estat entrenats sense notícies.}
+\label{tab:resultats-globals}
+\end{table}
+
+Els resultats mostren una elevada variabilitat entre arquitectures i configuracions. En general, PPO i SAC són els agents amb millor rendiment mitjà, tant pel que fa a la recompensa acumulada com a l'increment del valor de la cartera. SAC, en particular, assoleix els valors de retorn més alts en ambdues configuracions, tot i presentar recompenses negatives. Aquest fet pot estar relacionat amb estratègies de compra inicial massiva i mantiment passiu, especialment efectives en un context de mercat alcista.
+
+Pel que fa a DQN, la seva versió amb notícies mostra una millora clara respecte la configuració sense, que presenta un rendiment baix i molt dispers. Aquest comportament reforça la idea que DQN pot tenir més dificultats per aprendre estratègies eficients a partir de senyals numèrics bàsics, i pot beneficiar-se de fonts d’informació contextual més riques.
+
+\subsection{Comparació dels agents amb notícies}
+
+Aquesta secció analitza el comportament dels agents entrenats amb informació qualitativa (notícies). Per a cada arquitectura (DQN, PPO i SAC), es mostren les trajectòries més representatives i el comportament agregat tant en termes d’evolució del valor net com d’assignació d’actius al llarg del temps.
+
+Per garantir la qualitat de l’anàlisi, s’han eliminat totes aquelles iteracions en què l’agent no ha dut a terme cap acció de compra durant l’episodi. Aquestes execucions inactives podrien alterar la interpretació del comportament mitjà i, per tant, s’han exclòs dels càlculs.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{figs/net_worth_by_agent_with.png}
+\caption{Evolució temporal del valor net per als agents entrenats amb notícies. Es mostra la millor, pitjor i mitjana iteració.}
+\label{fig:networth-news}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{figs/shares_by_asset_with.png}
+\caption{Nombre mitjà d'accions mantingudes per actiu al llarg del temps (agents amb notícies).}
+\label{fig:shares-news}
+\end{figure}
+
+La Figura~\ref{fig:networth-news} mostra una clara superioritat de SAC en termes de valor net acumulat, amb una evolució molt estable entre iteracions. PPO també presenta una trajectòria consistent, tot i que lleugerament més variable. En canvi, DQN mostra una evolució més erràtica i desigual, amb gran distància entre la millor i la pitjor execució.
+
+La Figura~\ref{fig:shares-news} complementa aquesta observació: SAC manté posicions constants durant tot l’episodi, reflectint una estratègia inicial contundent i estable. PPO adapta les seves posicions de forma més gradual i activa, mentre que DQN mostra un patró molt desigual i una clara preferència per l’actiu XLE.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{figs/scatter_meanbar_sharpe_drawdown_with.png}
+\caption{Sharpe Ratio i Max Drawdown mitjans per agent amb notícies.}
+\label{fig:sharpe-drawdown-news}
+\end{figure}
+
+La Figura~\ref{fig:sharpe-drawdown-news} proporciona una visió complementària basada en mètriques de risc. SAC torna a destacar amb un Sharpe Ratio superior a 1 i un Drawdown moderat. PPO manté un bon equilibri entre rendiment i risc, mentre que DQN presenta més dispersió i valors de Sharpe més baixos, confirmant la seva inestabilitat.
+
+\subsection{Comparació amb els agents sense notícies}
+
+Aquesta secció examina de manera comparativa el comportament dels agents en funció de si han estat entrenats amb o sense informació qualitativa. Per facilitar aquesta comparació, es mantenen les mateixes visualitzacions utilitzades anteriorment: evolució del valor net, assignació d’actius i mètriques de rendiment ajustat al risc.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{figs/net_worth_by_agent_without.png}
+\caption{Evolució temporal del valor net per als agents entrenats sense notícies. Es mostra la millor, pitjor i mitjana iteració.}
+\label{fig:networth-without}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{figs/shares_by_asset_without.png}
+\caption{Nombre mitjà d'accions mantingudes per actiu al llarg del temps (agents sense notícies).}
+\label{fig:shares-without}
+\end{figure}
+
+Les Figures~\ref{fig:networth-news} i~\ref{fig:networth-without} permeten comparar l’evolució temporal del valor net en les dues configuracions. En general, els agents entrenats sense notícies mostren una trajectòria molt similar a la obtinguda amb les notícies, especialment en el cas de DQN i SAC. Toi i això, en els tres casos, la distància entre la millor i la pitjor execució és menor.
+
+Tanmateix, els resultats no mostren una superioritat clara d’una configuració sobre l’altra en termes de rendiment acumulat. En alguns casos, com PPO, la versió sense notícies assoleix valors mitjans de recompensa i retorn lleugerament superiors, mentre que en altres, com SAC, la configuració amb notícies ofereix el retorn màxim més alt. Això indica que la presència d'informació qualitativa no garanteix per si sola una millora sistemàtica del rendiment.
+
+Pel que fa a les estratègies d’assignació d’actius (Figures~\ref{fig:shares-news} i~\ref{fig:shares-without}), s’observa una gran similitud en l’estil d’inversió seguit per cada arquitectura en ambdues configuracions. SAC manté una política pràcticament inalterada amb i sense notícies, definida des dels primers passos. PPO també conserva un perfil actiu i equilibrat en els dos casos. En canvi, DQN presenta la mateixa inclinació forta per l’actiu XLE, independentment de la presència d’informació addicional. Això suggereix que, en la pràctica, l'ús de notícies no ha alterat de forma significativa l’estil d’inversió adoptat per cada agent.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figs/scatter_meanbar_sharpe_drawdown_without.png}
+\caption{Distribució del Sharpe Ratio i del Drawdown màxim per als agents entrenats sense notícies. Es mostra la mitjana per cada agent com a línia horitzontal.}
+\label{fig:sharpe-drawdown-without}
+\end{figure}
+
+Finalment, l’anàlisi de les mètriques de rendiment ajustat al risc (Figures~\ref{fig:sharpe-drawdown-news} i~\ref{fig:sharpe-drawdown-without}) mostra tendències clares. SAC i PPO aconsegueixen Sharpe Ratios més elevats i menys dispersos en la configuració sense notícies, cosa que indica una millor relació entre risc i retorn. En canvi, DQN mostra una millora rellevant quan s’incorporen notícies, amb un increment notable de la seva mitjana de Sharpe Ratio i una lleugera reducció del Drawdown.
+
+Aquest conjunt de resultats posa de manifest que la incorporació de notícies no té un efecte homogeni ni universalment positiu. Si bé pot afavorir arquitectures amb més capacitat de processament contextual, com DQN, també pot afegir soroll o dificultat en el procés d’aprenentatge d’agents com PPO o SAC. Per tant, la utilitat real de les notícies depèn fortament del tipus d’algorisme i de la seva habilitat per integrar aquesta informació en una estratègia coherent.
+
+\subsection{Limitacions i anomalies efectes de context}
+
+Durant el procés d’anàlisi s’han detectat diversos comportaments que poden limitar la interpretació general dels resultats i que caldria evitar en futures iteracions.
+
+En primer lloc, s’ha observat que alguns agents, especialment en la configuració sense notícies, convergeixen cap a polítiques subòptimes en què l’agent decideix no executar cap acció de compra durant tot l’episodi. Aquest fenomen es pot entendre com una forma de col·lapse prematur de la política cap a estratègies trivials, on l’exploració és mínima o inexistent. Des del punt de vista formal, això equival a trobar una política \(\pi\) tal que l’acció òptima estimada en cada estat és mantenir-se inactiu, probablement com a resultat d’una funció de recompensa que no penalitza explícitament aquesta inacció.
+
+Per tal de garantir la validesa de les estadístiques agregades, s’han descartat totes aquelles iteracions on l’agent no ha realitzat cap acció de compra. El nombre d’episodis descartats per inactivitat ha estat el següent:
+
+\begin{itemize}
+  \item \textbf{Amb notícies}: DQN (0), PPO (0), SAC (2)
+  \item \textbf{Sense notícies}: DQN (6), PPO (0), SAC (2)
+\end{itemize}
+
+D’altra banda, cal tenir en compte que el període de test considerat (gener 2024 – abril 2025) segueixuna tendència alcista en els principals índexs borsaris. Aquest context pot haver afavorit determinades arquitectures, especialment aquelles que adopten estratègies passives. Un exemple clar és el cas dels agents SAC, que en ambdues configuracions tendeixen a adquirir la totalitat de les accions disponibles a l’inici de l’episodi i mantenir-les fins al final. Aquest comportament, tot i ser altament rendible en un mercat en pujada, no garanteix cap capacitat real de generalització ni d’adaptació a entorns canviants. Per tant, els bons resultats d’aquests agents poden estar, en part, condicionats per la naturalesa del període analitzat.
+
+\subsection{Impacte medioambiental}
+
+L'entrenament d'aquest tipus de models implica un ús significatiu de recursos computacionals. Per tal d'avaluar
+l'impacte ambiental generat durant l'entrenament, s'ha utilitzat la llibreria CodeCarbon \ref{Codecarbon} que monitoritza el consum energètic i calcula l'equivalent d'emissions de $CO_2$ generades durant l'execució del codi.
+
+Per dur a terme aquest projecte s'ha utilitzat un ordinador portàtil amb els següents components:
+\begin{itemize}
+    \item Processador: Intel Core i7-1185G7 amb 8 fils
+    \item Targeta gràfica: NVIDIA GeForce GTX 1650 Ti
+    \item Memòria RAM: 32 GB
+\end{itemize}
+
+\paragraph{Consum energètic}
+
+S'han dut a terme 20 entrenaments complets, cadascun compost per l'entrenament de 6 agents, fent un total de 120 execucions. Cadascuna d'aquestes execucions ha tingut una durada aproximada de mitja hora, sumant un total d'unes 60 hores d'entrenament efectiu.
+
+Segons les dades monitoritzades per la llibreria \textit{CodeCarbon}, el consum energètic total estimat ha estat de 4,66 kWh. Aquest consum es distribueix entre els principals components computacionals de la següent manera:
+
+\begin{itemize}
+    \item CPU: 492.5 Wh
+    \item GPU: 1.765 KWh
+    \item RAM: 2.400 KWh
+\end{itemize}
+
+Tot l'entrenament s'ha realitzat en un entorn local, alimentat exclusivament amb energia elèctrica provinent de plaques solars fotovoltaiques. D'aquesta manera, es pot considerar que l'impacte mediambiental produït per aquest treball ha estat pràcticament nul.
+
+\paragraph{Emissions equivalents}
+
+Tot i haver utilitzat energia verda, es pot calcular l'equivalent de CO2 que s'hagués generat utilitzant energia provinent de la xarxa elèctrica. La llibreria CodeCarbon estima que la tassa d'emissió ha estat de $1.83\cdot10^{-6}kg/s$, això es tradueix en:
+\[
+60\ \text{h} \cdot \frac{3600\ \text{s}}{\text{h}} \cdot 1.83 \cdot 10^{-6}\ \frac{\text{kg}}{\text{s}} \approx 0.395\ \text{kg\ CO}_2
+\]
+
+Aquestes emissions serien les equivalents a les que generaria un cotxe circulant uns 2 km.
+
+\section{Conclusions}
+
+\subsection{Conclusions generals}
+
+Aquest treball ha tingut com a objectiu principal explorar com afecta la incorporació de notícies com a font d’informació contextual al rendiment d’agents d’aprenentatge per reforç profund aplicats a l’àmbit financer. Per fer-ho, s’ha implementat un entorn de simulació basat en dades reals, s’han adaptat arquitectures d’agents RL estàndard (DQN, PPO i SAC) i s’ha integrat un component de processament del llenguatge natural per representar informativament els titulars de notícies econòmiques.
+
+Els resultats obtinguts permeten extreure diverses conclusions rellevants. En primer lloc, s’ha comprovat que l’impacte de les notícies no és homogeni entre arquitectures. Mentre que agents com DQN es beneficien de la incorporació d’informació qualitativa —probablement per compensar les seves limitacions estructurals—, altres com PPO i SAC no mostren millores clares o fins i tot redueixen el seu rendiment mitjà. Aquest fet ha estat, en part, sorprenent, ja que s’esperava que una informació contextual addicional aportés valor de forma generalitzada. Aquests resultats suggereixen que, per tal que el component de PLN aporti un valor real, cal una representació semàntica més elaborada i un enllaç més fort entre el contingut informatiu i la presa de decisions estratègiques.
+
+A nivell estratègic, s’ha observat que els agents desenvolupen comportaments molt diferenciats. SAC tendeix cap a una política passiva —compra inicial i manteniment— que ha resultat altament rendible en el context de mercat alcista del període analitzat. En canvi, PPO mostra una dinàmica més adaptativa i DQN manté una forta dependència d’un únic actiu, fet que limita la seva capacitat de generalització.
+
+Pel que fa a l’assoliment dels objectius, es pot afirmar que s’han complert pràcticament tots els plantejats a l’inici del treball. S’ha implementat i validat l’entorn de simulació, s’ha integrat informació qualitativa en l’estat observat, s’han entrenat agents amb i sense notícies, i s’ha dut a terme una anàlisi exhaustiva dels resultats. No obstant això, no s’ha pogut explorar de manera sistemàtica l’impacte de diferents tipus de notícies (positives, negatives, neutres) ni s’ha abordat en profunditat el problema dels possibles biaixos en les fonts utilitzades.
+
+Pel que fa al seguiment de la planificació i la metodologia, el desenvolupament s’ha ajustat globalment a l’estructura prevista, però ha estat necessari dedicar més temps del previst a les fases d’implementació i anàlisi. La metodologia basada en aprenentatge per reforç ha estat adequada, tot i que s’han requerit ajustos per tractar comportaments no desitjats. En particular, s’han incorporat filtres per eliminar iteracions inactives, i s’han modificat les penalitzacions de la funció de recompensa amb l’objectiu de dissuadir polítiques trivials. Es va intentar, per exemple, mitigar el comportament excessivament passiu del SAC augmentant la penalització per inacció, però el model va continuar optant per la mateixa estratègia, suggerint una limitació estructural de l’algorisme més que una deficiència en la formulació de la recompensa.
+
+\subsection{Treballs futurs}
+
+A partir de les conclusions obtingudes, es poden identificar diverses línies de recerca amb potencial per millorar i aprofundir en els resultats:
+
+\begin{itemize}
+    \item \textbf{Millora del processament del llenguatge natural}: Cal explorar representacions més riques del contingut de les notícies, com embeddings contextuals o vectors semàntics específics per domini. També seria rellevant incorporar el cos complet de la notícia, o bé estructurar la informació per sentiments, temes o entitats esmentades.
+    \item \textbf{Filtratge i selecció de fonts}: Un pas important seria implementar un sistema de filtratge més acurat que seleccioni només les notícies més rellevants per a l’estat actual del mercat o per l’actiu concret. A més, emprar fonts més diverses o contrastades podria ajudar a reduir l’impacte de possibles biaixos.
+    \item \textbf{Ampliació de l’espai d’actius}: L’actual entorn s’ha centrat en tres actius. Estendre l’abast a un univers més ampli permetria comprovar la capacitat d’escalabilitat i adaptació dels agents.
+    \item \textbf{Avaluació en entorns de mercat alternatius}: Repetir l’experimentació en períodes laterals o baixistes permetria verificar si les estratègies adoptades són realment robustes.
+    \item \textbf{Exploració d’enfocaments multiagent}: Simular interaccions entre agents amb diferents estratègies pot acostar el model a situacions de mercat més realistes.
+    \item \textbf{Integració de factors no financers}: Afegir criteris ambientals, socials o de governança (ESG) en la presa de decisions pot contribuir a agents més responsables i sostenibles.
+\end{itemize}
+
+Aquestes línies obren la porta a un aprenentatge més profund, contextual i generalitzable, i reforcen la rellevància del PLN dins dels sistemes d’aprenentatge automàtic aplicats al domini financer.
 
 
 
