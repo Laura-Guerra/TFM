@@ -12,13 +12,13 @@ COLORS = {
     "white": "#FFFFFF",
 }
 
+
 def set_matplotlib_theme():
     mpl.rcParams.update({
         "font.family": "DejaVu Sans",
         "font.size": 11,
         "axes.titlesize": 14,
         "axes.labelsize": 12,
-
         "axes.facecolor": COLORS["white"],
         "figure.facecolor": COLORS["white"],
         "axes.edgecolor": COLORS["grey"],
@@ -26,23 +26,18 @@ def set_matplotlib_theme():
         "xtick.color": COLORS["black"],
         "ytick.color": COLORS["black"],
         "text.color": COLORS["black"],
-
         "axes.grid": True,
         "grid.color": COLORS["grey"],
         "grid.linestyle": "--",
         "grid.alpha": 0.5,
-
         "legend.frameon": False,
         "legend.fontsize": 10,
         "legend.loc": "best",
-
         "figure.figsize": (10, 6),
-
-        "lines.linewidth": 2,
+        "lines.linewidth": 1,
         "lines.markersize": 6,
         "xtick.direction": "out",
         "ytick.direction": "out",
-
         "axes.prop_cycle": mpl.cycler(color=[
             COLORS["dark_blue"],
             COLORS["blue"],
@@ -50,6 +45,7 @@ def set_matplotlib_theme():
             COLORS["red"],
             COLORS["yellow"]
         ])
+
     })
 
 def altair_custom_theme():
@@ -82,7 +78,12 @@ def altair_custom_theme():
                         COLORS["blue"],
                         COLORS["light_blue"],
                         COLORS["red"],
-                        COLORS["yellow"]
+                        COLORS["yellow"],
+                        COLORS["orange"],
+                        COLORS["green"],
+                        COLORS["purple"],
+                        COLORS["pink"],
+                        COLORS["teal"]
                     ]
                 }
             }

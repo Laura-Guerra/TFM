@@ -11,77 +11,21 @@ from tfm.src.rl.stock_env import StockEnvironment
 from tfm.src.rl.agents.ppo_agent import PPOAgent
 from tfm.src.rl.agents.sac_agent import SACAgent
 from tfm.src.rl.agents.dqn_agent import DQNAgent
-from tfm.src.config.settings import PATH_DATA_PROCESSED, PATH_DATA_MODELS
+from tfm.src.config.settings import PATH_DATA_PROCESSED, PATH_DATA_MODELS, PATH_DATA_MODELS_2
 
 # --- Paràmetres generals ---
 INITIAL_BALANCE = 50_000
-TOTAL_TIMESTEPS = 300_000
-N_TRIALS = 15
-N_EVAL_EPISODES = 10
-EVAL_EPISODES_FINAL = 30
+TOTAL_TIMESTEPS = 250_000
+N_TRIALS = 20
+N_EVAL_EPISODES = 15
+EVAL_EPISODES_FINAL = 50
 MODELS = [
     ("sac", SACAgent, True,  True),
-    ("sac", SACAgent, False, True),
     ("ppo", PPOAgent, True, False),# PPO amb notícies, accions discretes
-    ("ppo", PPOAgent, False, False), # PPO sense notícies, accions discretes
     ("dqn", DQNAgent, True,  False),
+    ("sac", SACAgent, False, True),
+    ("ppo", PPOAgent, False, False), # PPO sense notícies, accions discretes
     ("dqn", DQNAgent, False, False),
-]
-
-# --- Paràmetres d'Optuna ---
-best_params = [
-    {
-      "learning_rate": 0.0003396819881109711,
-      "batch_size": 128,
-      "gamma": 0.962503705840084,
-      "tau": 0.01722356916861654,
-      "train_freq": 1,
-      "ent_coef": "auto_0.1"
-    },
-    {
-      "learning_rate": 3.072636465217382e-05,
-      "batch_size": 64,
-      "gamma": 0.9700455725807031,
-      "tau": 0.012086016387945788,
-      "train_freq": 1,
-      "ent_coef": "auto_0.1"
-    },
-    {
-      "learning_rate": 0.0006880154323453363,
-      "n_steps": 3584,
-      "batch_size": 128,
-      "gamma": 0.9883491685207134,
-      "gae_lambda": 0.9047565401611551,
-      "clip_range": 0.39504379518568444
-    },
-    {
-      "learning_rate": 0.0004062659261549968,
-      "n_steps": 1024,
-      "batch_size": 64,
-      "gamma": 0.9975272371252962,
-      "gae_lambda": 0.9295527530816636,
-      "clip_range": 0.23632222838222727
-    },
-    {
-      "learning_rate": 0.00013358064014045828,
-      "learning_starts": 700,
-      "batch_size": 128,
-      "gamma": 0.9515321438520871,
-      "train_freq": 8,
-      "target_update_interval": 500,
-      "exploration_fraction": 0.2552930688993815,
-      "exploration_final_eps": 0.19376741864438518
-    },
-    {
-      "learning_rate": 0.00010149779713164892,
-      "learning_starts": 800,
-      "batch_size": 64,
-      "gamma": 0.99732802009531,
-      "train_freq": 8,
-      "target_update_interval": 1000,
-      "exploration_fraction": 0.2771409663637737,
-      "exploration_final_eps": 0.151675580848709
-    }
 ]
 
 date_str=datetime.today().strftime("%Y-%m-%d_%H-%M")
@@ -107,7 +51,7 @@ def log_result(now, model_name, with_news, is_continuous, mean_reward, emissions
             writer.writeheader()  # Escriu capçalera només si el fitxer és nou
         writer.writerow(row)
 
-def run_model(model_name, AgentClass, with_news, is_continuous, params):
+def run_model(model_name, AgentClass, with_news, is_continuous):
     try:
         print(f"\n🚀 Entrenant {model_name.upper()} {'amb' if with_news else 'sense'} notícies...")
 
@@ -140,12 +84,22 @@ def run_model(model_name, AgentClass, with_news, is_continuous, params):
         train_env = Monitor(StockEnvironment(df_train, INITIAL_BALANCE, continuous_actions=is_continuous, model_name=model_name))
         val_env   = Monitor(StockEnvironment(df_val,   INITIAL_BALANCE, continuous_actions=is_continuous, model_name=model_name))
 
-        if params is None:
-            agent_tune = AgentClass(train_env, val_env, path=run_path)
+        # Ruta per carregar/guardar best_params.json segons model i configuració
+        best_params_path = PATH_DATA_MODELS / model_name / ('with' if with_news else 'without') / "best_params.json"
+
+        # Si ja existeixen paràmetres òptims, els carrega
+        if best_params_path.exists():
+            print(f"🔁 Carregant hiperparàmetres des de {best_params_path}")
+            with open(best_params_path, "r") as f:
+                params = json.load(f)
+        else:
+            print(f"🔍 Cercant hiperparàmetres per {model_name.upper()} {'amb' if with_news else 'sense'} notícies")
+            agent_tune = AgentClass(train_env, val_env, path=best_params_path.parent)
             params = agent_tune.optimize_hyperparameters(n_trials=N_TRIALS, n_eval_episodes=N_EVAL_EPISODES)
 
-            with (run_path / "best_params.json").open("w") as f:
+            with open(best_params_path, "w") as f:
                 json.dump(params, f, indent=2)
+            print(f"✅ Paràmetres guardats a {best_params_path}")
 
         # Entrenament final
         df_train_full = pd.concat([df_train, df_val]).sort_values("date")
@@ -169,5 +123,4 @@ def run_model(model_name, AgentClass, with_news, is_continuous, params):
 for i in range(10):
     iteration = i+1
     for index, (model_name, AgentClass, with_news, is_continuous) in enumerate(MODELS):
-        model_params = best_params[index]
-        run_model(model_name, AgentClass, with_news, is_continuous, model_params)
+        run_model(model_name, AgentClass, with_news, is_continuous)

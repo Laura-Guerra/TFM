@@ -14,7 +14,7 @@ class StockEnvironment(gymnasium.Env):
     metadata = {"render.modes": ["human"]}
 
     def __init__(self, df, initial_balance=50000.0, continuous_actions=False,
-                 model_name="dqn", do_save_history=False, episode_length=200, is_train=False):
+                 model_name="dqn", do_save_history=False, episode_length=200, is_train=False, is_eval=False):
         super().__init__()
         self.df = df.reset_index(drop=True)
         self.assets = sorted(self.df["ticker"].unique())
@@ -31,6 +31,7 @@ class StockEnvironment(gymnasium.Env):
         self.max_reward = -np.inf
         self.best_episode = None
         self.worse_episode = None
+        self.is_eval = is_eval
 
         if self.continuous_actions:
             self.action_space = spaces.Box(low=-1, high=1, shape=(self.n_assets,), dtype=np.float32)
@@ -63,7 +64,7 @@ class StockEnvironment(gymnasium.Env):
 
     def reset(self, seed=None, options=None):
         self.max_steps = len(self.df) // self.n_assets - 1
-        self.current_step = np.random.randint(1, self.max_steps - self.episode_length)
+        self.current_step = np.random.randint(1, self.max_steps - self.episode_length) if not self.is_eval else 0
         self.start_step = self.current_step
         self.balance = self.initial_balance
         self.shares_held = [0] * self.n_assets
@@ -176,7 +177,11 @@ class StockEnvironment(gymnasium.Env):
         self.history["action_vector"].append(actions_record)
 
         info = {}
-        terminated = self.current_step >= self.start_step + self.episode_length
+        terminated = (
+            self.current_step >= self.start_step + self.episode_length
+            if not self.is_eval else
+            self.current_step >= self.max_steps
+        )
         truncated = net_worth <= self.initial_balance * 0.15
         if self.is_train and self.balance == self.initial_balance and self.current_step-self.start_step > 10:
             truncated = True
@@ -213,7 +218,7 @@ class StockEnvironment(gymnasium.Env):
 
         # Penalització per ocasions perdudes
         missed_penalty = 0.0
-        penalty_scale = 1000.0  # Penalització proporcional al canvi de preu si es perd una oportunitat clara
+        penalty_scale = 1000.0  if not self.continuous_actions else 10000 # Penalització proporcional al canvi de preu si es perd una oportunitat clara
         threshold = 0.01  # Canvi del 1%
 
         if self.current_step > 1 and self.history["action_vector"]:
@@ -264,25 +269,44 @@ class StockEnvironment(gymnasium.Env):
         logger.info(
             f"Step {self.current_step} | Balance: {self.balance:.2f} | Net Worth: {self.previous_net_worth:.2f} | Holdings: {self.shares_held}")
 
-    def _compute_metrics(self, risk_free_rate: float = 0.02) -> dict:
+    def _compute_metrics(self, risk_free_rate: float = 0.05) -> dict:
         df = pd.DataFrame(self.history)
         net_worth = df["net_worth"].values
-        returns = np.diff(net_worth) / net_worth[:-1]
-        daily_rf = (1 + risk_free_rate) ** (1 / 252) - 1
-        sharpe = (returns.mean() - daily_rf) / (returns.std() + 1e-8) * np.sqrt(252)
-        sortino = (returns.mean() - daily_rf) / (returns[returns < 0].std() + 1e-8) * np.sqrt(252)
+        rewards = df["reward"].values
+
+        if len(net_worth) < 2:
+            return {
+                "Reward Sum": 0.0,
+                "Sharpe Ratio": 0.0,
+                "Max Drawdown": 0.0,
+                "Mean Return": 0.0
+            }
+
+        # Recompensa acumulada (sumatori del reward)
+        total_reward = rewards.sum()
+
+        # Retorns percentuals diaris
+        returns = np.diff(net_worth) / (net_worth[:-1] + 1e-8)
+
+        # Retorn mitjà diari
+        mean_return = returns.mean()
+
+        # Sharpe Ratio (N = 252 dies anuals)
+        std_returns = returns.std()
+        sharpe = (mean_return - risk_free_rate/252) / max(std_returns, 1e-6) * (252 ** 0.5)
+
+        # Max Drawdown
         cum_max = np.maximum.accumulate(net_worth)
-        drawdown = (net_worth - cum_max) / cum_max
-        max_drawdown = drawdown.min()
-        volatility = returns.std() * np.sqrt(252)
-        cumulative_return = net_worth[-1] / net_worth[0] - 1
+        drawdown = (cum_max - net_worth) / (cum_max + 1e-8)
+        max_drawdown = drawdown.max()
+        cumulative_return = net_worth[-1] / (net_worth[0] + 1e-8) - 1
+
         return {
+            "Reward Sum": total_reward,
             "Sharpe Ratio": sharpe,
-            "Sortino Ratio": sortino,
             "Max Drawdown": max_drawdown,
-            "Volatility": volatility,
-            "Cumulative Return": cumulative_return,
-        }
+            "Mean Return": mean_return,
+            "Cumulative Return": cumulative_return,        }
 
     def save_history(self, path: str):
         df_history = pd.DataFrame(self.history)
