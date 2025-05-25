@@ -15,8 +15,6 @@ __pycache__/
 *.DS_Store
 
 # Datos y modelos grandes
-data/raw/
-models/
 *.pkl
 *.h5
 *.pt
@@ -25,3 +23,5 @@ models/
 venv/
 .env/
 .venv/!/.env
+/tfm/data/raw/news/
+/tfm/data/processed/

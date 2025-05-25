@@ -7,8 +7,42 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+dotenv = "^0.9.9"
+requests = "^2.32.3"
+pandas = "^2.2.3"
+pydantic = "^2.11.3"
+altair = "^5.5.0"
+matplotlib = "^3.10.1"
+nltk = "^3.9.1"
+gensim = "^4.3.3"
+scikit-learn = "^1.6.1"
+textblob = "^0.19.0"
+joblib = "^1.4.2"
+loguru = "^0.7.3"
+transformers = "^4.51.3"
+yfinance = "^0.2.55"
+ta = "^0.11.0"
+stable-baselines3 = {version = "2.6.0", extras = ["extra"]}
+optuna = "^4.3.0"
+shimmy = "^2.0"
+tensorboard = "^2.19.0"
+gymnasium = "^1.1.1"
+codecarbon = "^3.0.1"
+seaborn = "^0.13.2"
 
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.11.5"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 79
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = []
+
